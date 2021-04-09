@@ -1,6 +1,13 @@
 #ifndef TOKENS_HPP_ 
 #define TOKENS_HPP_
 #include <cstdlib>
+#include <iostream>
+#include <stack>
+
+using std::cout;
+using std::endl;
+using std::stack;
+using std::string;
 
 enum tokentype { 
 	VOID = 1, 
@@ -39,7 +46,14 @@ enum tokentype {
 }; 
 extern int yylineno;
 extern char* yytext;
-extern size_t yyleng;
-extern int yylex(); 
+extern int yyleng;
+extern int yylex();
+extern char textbuff[1024];
+extern char* textbuffptr;
+
+void handleTokenA(int token);
+int handleTokenB(int token, int tabs, stack<char> &paren_stack);
+char hexaToChar(char f, char s);
+void handle_quotes();
 
 #endif /* TOKENS_HPP_ */
