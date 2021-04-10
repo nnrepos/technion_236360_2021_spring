@@ -119,5 +119,3 @@ void handleTokenA(int token) {
             break;
     }
 }
-
-void handle_quotes(){}

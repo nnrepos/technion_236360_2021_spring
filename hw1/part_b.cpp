@@ -10,6 +10,10 @@ int main() {
     while ((token = yylex())) {
         tabs = handleTokenB(token, tabs, paren_stack);
     }
+    if (tabs > 0){
+        cout << "Error: Bad Expression" << endl;
+        exit(1);
+    }
     return 0;
 }
 
@@ -134,9 +138,4 @@ int handleTokenB(int token, int tabs, stack<char> &paren_stack) {
             break;
     }
     return tabs;
-}
-
-void handle_quotes() {
-    printf("Error \"\n");
-    exit(1);
 }

@@ -43,10 +43,10 @@ enum tokentype {
 	ID = 31,
 	NUM = 32,
 	STRING = 33
-}; 
+};
+
 extern int yylineno;
 extern char* yytext;
-extern int yyleng;
 extern int yylex();
 extern char textbuff[1024];
 extern char* textbuffptr;
@@ -54,6 +54,5 @@ extern char* textbuffptr;
 void handleTokenA(int token);
 int handleTokenB(int token, int tabs, stack<char> &paren_stack);
 char hexaToChar(char f, char s);
-void handle_quotes();
 
 #endif /* TOKENS_HPP_ */

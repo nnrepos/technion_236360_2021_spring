@@ -1,0 +1,8 @@
+// Check undef hex escape in an unclosed string
+
+int main() {
+	print("Hello world!");
+	print("Nice bad escape \xff 
+        in an unclosed string");
+	return 0;
+}
