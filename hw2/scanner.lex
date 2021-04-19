@@ -1,5 +1,5 @@
 %{
-#include "tokens.hpp"
+#include "scanner.h"
 %}
 
 %option yylineno
@@ -24,6 +24,7 @@ lf				\x0A
 %x STRES
 %x STRESX
 %x STRESE
+
 %%
 
 "void"						return VOID;

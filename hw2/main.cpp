@@ -1,5 +1,5 @@
-#include "tokens.hpp"
-
+#include "typedefs.h"
+// used in scanner.lex
 char textbuff[1024];
 char* textbuffptr;
 
