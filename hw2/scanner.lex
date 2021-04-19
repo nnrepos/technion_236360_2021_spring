@@ -53,7 +53,7 @@ lf				\x0A
 ")" 						return RPAREN;
 "{" 						return LBRACE;
 "}" 						return RBRACE;
-[!<>=]"="					return RELOP;
+[!<>=]"="					return RELOP;  // TODO nani?
 [<>]						return RELOP;
 "=" 						return ASSIGN;
 [-+*]						return BINOP;
@@ -63,10 +63,10 @@ lf				\x0A
 "0"							return NUM;
 {nonzerodigit}{digit}* 		return NUM;
 <INITIAL>{strsign}			textbuffptr = textbuff; BEGIN(STR);
-<STR>{lf}					printf("Error unclosed string\n");	exit(1);
-<STR>{cr}					printf("Error unclosed string\n");	exit(1);
+<STR>{lf}					errorLex(yylineno);
+<STR>{cr}					errorLex(yylineno);
 <STR>{bs}					BEGIN(STRES)  ;
-<STR>{strsign}				*textbuffptr = '\0';	BEGIN(INITIAL);	return STRING;
+<STR>{strsign}				*textbuffptr = '\0';	BEGIN(INITIAL);	return STRING;  // TODO yylval
 <STR>.						*textbuffptr = *yytext;	textbuffptr++;
 <STRES>{strsign}			*textbuffptr = '\"';	textbuffptr++;	BEGIN(STR);
 <STRES>"n"					*textbuffptr = '\n';	textbuffptr++;	BEGIN(STR);
@@ -77,17 +77,17 @@ lf				\x0A
 <STRES>"x"					BEGIN(STRESX);
 <STRES>.					textbuffptr = textbuff;	*textbuffptr++ = *yytext; BEGIN(STRESE);
 <STRESX>[0-7]{hexdigit}     *textbuffptr = hexaToChar(yytext[0], yytext[1]);	textbuffptr++;	BEGIN(STR);
-<STRESX>{strsign}			printf("Error undefined escape sequence x\n");	exit(1);
-<STRESX>({lf}|{cr})			printf("Error unclosed string\n");	exit(1);
-<STRESX>.{strsign}			printf("Error undefined escape sequence x%c\n", yytext[0]);	exit(1);
-<STRESX>.({lf}|{cr})		printf("Error unclosed string\n");	exit(1);
+<STRESX>{strsign}			errorLex(yylineno);
+<STRESX>({lf}|{cr})			errorLex(yylineno);
+<STRESX>.{strsign}			errorLex(yylineno);
+<STRESX>.({lf}|{cr})		errorLex(yylineno);
 <STRESX>..					textbuffptr = textbuff; *textbuffptr++ = 'x';*textbuffptr++ = yytext[0]; *textbuffptr++ = yytext[1]; BEGIN(STRESE);
-<STRESE>{strsign}			*textbuffptr = '\0';	printf("Error undefined escape sequence %s\n", textbuff);	exit(1);
-<STRESE>({lf}|{cr})			printf("Error unclosed string\n");	exit(1);
+<STRESE>{strsign}			errorLex(yylineno);
+<STRESE>({lf}|{cr})			errorLex(yylineno);
 <STRESE>.					;
-<STR,STRES,STRESX><<EOF>>	printf("Error unclosed string\n");	exit(1);
+<STR,STRES,STRESX><<EOF>>	errorLex(yylineno);
 {whitespace}				;
-.							printf("Error %s\n", yytext);	exit(1);
+.							errorLex(yylineno);
 
 %%
 

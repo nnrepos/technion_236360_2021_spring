@@ -64,9 +64,11 @@ void output::printProductionRule(int ruleno) {
 
 void output::errorLex(int lineno){
     cout << "line " << lineno << ": " << "lexical error" << endl;
+    exit(1);
 }
 
 void output::errorSyn(int lineno){
     cout << "line " << lineno << ": " << "syntax error" << endl;
+    exit(2);
 }
 

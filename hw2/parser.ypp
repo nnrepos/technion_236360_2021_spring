@@ -1,113 +1,114 @@
 %{
-
+#include "parse_tools.h"
 
 %}
 
-
+// TODO precedence
+%token AND
 %%
 
 Program: Funcs
-    {}
+    {printProductionRule();}
 Funcs: %empty
-    {}
+    {printProductionRule();}
 Funcs: FuncDecl Funcs
-    {}
+    {printProductionRule();}
 FuncDecl: RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
-    {}
+    {printProductionRule();}
 RetType: Type
-    {}
+    {printProductionRule();}
 RetType: VOID
-    {}
+    {printProductionRule();}
 Formals: %empty
-    {}
+    {printProductionRule();}
 Formals: FormalsList
-    {}
+    {printProductionRule();}
 FormalsList: FormalDecl
-    {}
+    {printProductionRule();}
 FormalsList: FormalDecl COMMA FormalsList
-    {}
+    {printProductionRule();}
 FormalDecl: Type ID
-    {}
+    {printProductionRule();}
 Statements: Statement
-    {}
+    {printProductionRule();}
 Statements: Statements Statement
-    {}
+    {printProductionRule();}
 Statement: LBRACE Statements RBRACE
-    {}
+    {printProductionRule();}
 Statement: Type ID SC
-    {}
+    {printProductionRule();}
 Statement: Type ID ASSIGN Exp SC
-    {}
+    {printProductionRule();}
 Statement: ID ASSIGN Exp SC
-    {}
+    {printProductionRule();}
 Statement: Call SC
-    {}
+    {printProductionRule();}
 Statement: RETURN SC
-    {}
+    {printProductionRule();}
 Statement: RETURN Exp SC
-    {}
+    {printProductionRule();}
 Statement: IF LPAREN Exp RPAREN Statement
-    {}
+    {printProductionRule();}
 Statement: IF LPAREN Exp RPAREN Statement ELSE Statement
-    {}
+    {printProductionRule();}
 Statement: WHILE LPAREN Exp RPAREN Statement
-    {}
+    {printProductionRule();}
 Statement: BREAK SC
-    {}
+    {printProductionRule();}
 Statement: CONTINUE SC
-    {}
+    {printProductionRule();}
 Statement:  SWITCH LPAREN Exp RPAREN LBRACE CaseList RBRACE
-    {}
+    {printProductionRule();}
 Call: ID LPAREN ExpList RPAREN
-    {}
+    {printProductionRule();}
 Call: ID LPAREN RPAREN
-    {}
+    {printProductionRule();}
 ExpList: Exp
-    {}
+    {printProductionRule();}
 ExpList: Exp COMMA ExpList
-    {}
+    {printProductionRule();}
 Type: INT
-    {}
+    {printProductionRule();}
 Type: BYTE
-    {}
+    {printProductionRule();}
 Type: BOOL
-    {}
+    {printProductionRule();}
 Exp: LPAREN Exp RPAREN
-    {}
+    {printProductionRule();}
 Exp: Exp BINOP Exp
-    {}
+    {printProductionRule();}
 Exp: ID
-    {}
+    {printProductionRule();}
 Exp: Call
-    {}
+    {printProductionRule();}
 Exp: NUM
-    {}
+    {printProductionRule();}
 Exp: NUM B
-    {}
+    {printProductionRule();}
 Exp: STRING
-    {}
+    {printProductionRule();}
 Exp: TRUE
-    {}
+    {printProductionRule();}
 Exp: FALSE
-    {}
+    {printProductionRule();}
 Exp: NOT Exp
-    {}
+    {printProductionRule();}
 Exp: Exp AND Exp
-    {}
+    {printProductionRule();}
 Exp: Exp OR Exp
-    {}
+    {printProductionRule();}
 Exp: Exp RELOP Exp
-    {}
+    {printProductionRule();}
 Exp: LPAREN Type RPAREN Exp
-    {}
+    {printProductionRule();}
 CaseList: CaseDecl CaseList
-    {}
+    {printProductionRule();}
 CaseList: CaseDecl
-    {}
+    {printProductionRule();}
 CaseList: DEFAULT COLON Statements
-    {}
+    {printProductionRule();}
 CaseDecl: CASE NUM COLON Statements
-    {}
+    {printProductionRule();}
 
 %%
 
