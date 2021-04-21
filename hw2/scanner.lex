@@ -10,7 +10,7 @@ digit			([0-9])
 nonzerodigit	([1-9])
 hexdigit		([0-9a-fA-F])
 letter			([a-zA-Z])
-leORdi			([0-9a-zA-Z])
+alphanum		([0-9a-zA-Z])
 lineComment		\/\/[^\n\r]*
 whitespace		[ \t\r\n]
 strsign			\"
@@ -19,6 +19,10 @@ bs				\x5C
 fs				\x2F
 cr				\x0D
 lf				\x0A
+equalUnequal    (==|!=)
+inequality      (<|>|<=|>=)
+multDiv         (\*|[/])
+plusMinus       (\+|-)
 
 %x STR
 %x STRES
@@ -53,20 +57,20 @@ lf				\x0A
 ")" 						return RPAREN;
 "{" 						return LBRACE;
 "}" 						return RBRACE;
-[!<>=]"="					return RELOP;  // TODO nani?
-[<>]						return RELOP;
+{equalUnequal}				return EQUAL_UNEQUAL;
+{inequality}				return INEQUALITY;
 "=" 						return ASSIGN;
-[-+*]						return BINOP;
-{fs}						return BINOP;
-{lineComment}				return COMMENT;
-{letter}{leORdi}*			return ID;
+{multDiv}					return MULT_DIV;
+{plusMinus}					return PLUS_MINUS;
+{lineComment}				;
+{letter}{alphanum}*			return ID;
 "0"							return NUM;
 {nonzerodigit}{digit}* 		return NUM;
 <INITIAL>{strsign}			textbuffptr = textbuff; BEGIN(STR);
 <STR>{lf}					errorLex(yylineno);
 <STR>{cr}					errorLex(yylineno);
 <STR>{bs}					BEGIN(STRES)  ;
-<STR>{strsign}				*textbuffptr = '\0';	BEGIN(INITIAL);	return STRING;  // TODO yylval
+<STR>{strsign}				*textbuffptr = '\0';	BEGIN(INITIAL);	return STRING;
 <STR>.						*textbuffptr = *yytext;	textbuffptr++;
 <STRES>{strsign}			*textbuffptr = '\"';	textbuffptr++;	BEGIN(STR);
 <STRES>"n"					*textbuffptr = '\n';	textbuffptr++;	BEGIN(STR);

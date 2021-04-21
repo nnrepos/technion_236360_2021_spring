@@ -1,114 +1,173 @@
 %{
-#include "parse_tools.h"
+#include "output.hpp"
 
 %}
 
-// TODO precedence
-%token AND
+%token VOID
+%token INT
+%token BYTE
+%token B
+%token BOOL
+%token TRUE
+%token FALSE
+%token RETURN
+%token IF
+%token WHILE
+%token BREAK
+%token CONTINUE
+%token SC
+%token COMMA
+%token ID
+%token NUM
+%token STRING
+%token DOTS
+%token SWITCH
+%token CASE
+%token DEFAULT
+%token COLON
+
+//priority 1
+%right ASSIGN
+
+//priority 3
+%left OR
+
+//priority 4
+%left AND
+
+// priority 8
+%left EQUAL_UNEQUAL
+
+// priority 9
+%nonassoc INEQUALITY
+
+// priority 11
+%left PLUS_MINUS
+
+// priority 12
+%left MULT_DIV
+
+// priority 14
+%right NOT
+
+// priority 16
+%left LBRACKET RBRACKET LBRACE RBRACE LPAREN RPAREN
+
+// top priority (dangling else)
+%right ELSE
 %%
 
 Program: Funcs
-    {printProductionRule();}
+    {printProductionRule(1);}
 Funcs: %empty
-    {printProductionRule();}
+    {printProductionRule(2);}
 Funcs: FuncDecl Funcs
-    {printProductionRule();}
+    {printProductionRule(3);}
 FuncDecl: RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
-    {printProductionRule();}
+    {printProductionRule(4);}
 RetType: Type
-    {printProductionRule();}
+    {printProductionRule(5);}
 RetType: VOID
-    {printProductionRule();}
+    {printProductionRule(6);}
 Formals: %empty
-    {printProductionRule();}
+    {printProductionRule(7);}
 Formals: FormalsList
-    {printProductionRule();}
+    {printProductionRule(8);}
 FormalsList: FormalDecl
-    {printProductionRule();}
+    {printProductionRule(9);}
 FormalsList: FormalDecl COMMA FormalsList
-    {printProductionRule();}
+    {printProductionRule(10);}
 FormalDecl: Type ID
-    {printProductionRule();}
+    {printProductionRule(11);}
 Statements: Statement
-    {printProductionRule();}
+    {printProductionRule(12);}
 Statements: Statements Statement
-    {printProductionRule();}
+    {printProductionRule(13);}
 Statement: LBRACE Statements RBRACE
-    {printProductionRule();}
+    {printProductionRule(14);}
 Statement: Type ID SC
-    {printProductionRule();}
+    {printProductionRule(15);}
 Statement: Type ID ASSIGN Exp SC
-    {printProductionRule();}
+    {printProductionRule(16);}
 Statement: ID ASSIGN Exp SC
-    {printProductionRule();}
+    {printProductionRule(17);}
 Statement: Call SC
-    {printProductionRule();}
+    {printProductionRule(18);}
 Statement: RETURN SC
-    {printProductionRule();}
+    {printProductionRule(19);}
 Statement: RETURN Exp SC
-    {printProductionRule();}
+    {printProductionRule(20);}
 Statement: IF LPAREN Exp RPAREN Statement
-    {printProductionRule();}
+    {printProductionRule(21);}
 Statement: IF LPAREN Exp RPAREN Statement ELSE Statement
-    {printProductionRule();}
+    {printProductionRule(22);}
 Statement: WHILE LPAREN Exp RPAREN Statement
-    {printProductionRule();}
+    {printProductionRule(23);}
 Statement: BREAK SC
-    {printProductionRule();}
+    {printProductionRule(24);}
 Statement: CONTINUE SC
-    {printProductionRule();}
+    {printProductionRule(25);}
 Statement:  SWITCH LPAREN Exp RPAREN LBRACE CaseList RBRACE
-    {printProductionRule();}
+    {printProductionRule(26);}
 Call: ID LPAREN ExpList RPAREN
-    {printProductionRule();}
+    {printProductionRule(27);}
 Call: ID LPAREN RPAREN
-    {printProductionRule();}
+    {printProductionRule(28);}
 ExpList: Exp
-    {printProductionRule();}
+    {printProductionRule(29);}
 ExpList: Exp COMMA ExpList
-    {printProductionRule();}
+    {printProductionRule(30);}
 Type: INT
-    {printProductionRule();}
+    {printProductionRule(31);}
 Type: BYTE
-    {printProductionRule();}
+    {printProductionRule(32);}
 Type: BOOL
-    {printProductionRule();}
+    {printProductionRule(33);}
 Exp: LPAREN Exp RPAREN
-    {printProductionRule();}
-Exp: Exp BINOP Exp
-    {printProductionRule();}
+    {printProductionRule(34);}
+Exp: Exp PLUS_MINUS Exp
+    {printProductionRule(35);}
+Exp: Exp MULT_DIV Exp
+    {printProductionRule(35);}
 Exp: ID
-    {printProductionRule();}
+    {printProductionRule(36);}
 Exp: Call
-    {printProductionRule();}
+    {printProductionRule(37);}
 Exp: NUM
-    {printProductionRule();}
+    {printProductionRule(38);}
 Exp: NUM B
-    {printProductionRule();}
+    {printProductionRule(39);}
 Exp: STRING
-    {printProductionRule();}
+    {printProductionRule(40);}
 Exp: TRUE
-    {printProductionRule();}
+    {printProductionRule(41);}
 Exp: FALSE
-    {printProductionRule();}
+    {printProductionRule(42);}
 Exp: NOT Exp
-    {printProductionRule();}
+    {printProductionRule(43);}
 Exp: Exp AND Exp
-    {printProductionRule();}
+    {printProductionRule(44);}
 Exp: Exp OR Exp
-    {printProductionRule();}
-Exp: Exp RELOP Exp
-    {printProductionRule();}
+    {printProductionRule(45);}
+Exp: Exp EQUAL_UNEQUAL Exp
+    {printProductionRule(46);}
+Exp: Exp INEQUALITY Exp
+    {printProductionRule(46);}
 Exp: LPAREN Type RPAREN Exp
-    {printProductionRule();}
+    {printProductionRule(47);}
 CaseList: CaseDecl CaseList
-    {printProductionRule();}
+    {printProductionRule(48);}
 CaseList: CaseDecl
-    {printProductionRule();}
+    {printProductionRule(49);}
 CaseList: DEFAULT COLON Statements
-    {printProductionRule();}
+    {printProductionRule(50);}
 CaseDecl: CASE NUM COLON Statements
-    {printProductionRule();}
+    {printProductionRule(51);}
 
 %%
 
+int yyerror(const char * message)
+{
+	errorSyn(yylineno);
+	exit(0);
+}
