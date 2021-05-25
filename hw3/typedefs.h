@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 #include <unordered_map>
+#include <cassert>
 #define YYSTYPE STypePtr
 
 using std::cout;
@@ -17,6 +18,7 @@ using std::shared_ptr;
 using std::pair;
 using std::vector;
 using std::unordered_map;
+using std::dynamic_pointer_cast;
 
 extern int yylineno;
 extern char *yytext;
@@ -34,13 +36,12 @@ enum GeneralTypeEnum {
     BOOL_TYPE,
     STRING_TYPE,
     FUNCTION_TYPE,
-    VARIABLE_TYPE
+    VARIABLE_TYPE,
+    OTHER_TYPE
 
 };
 
 typedef GeneralTypeEnum Type;
-
-typedef vector<pair<Type, int>> ArgList;
 
 class STypeBase {
 public:
@@ -57,6 +58,7 @@ typedef shared_ptr<STypeBase> STypePtr;
 class STypeCType : public STypeBase {
 public:
     Type type;
+    explicit STypeCType(Type& type);
 };
 
 typedef shared_ptr<STypeCType> STypeCTypePtr;
@@ -78,34 +80,45 @@ public:
 typedef shared_ptr<STypeNumber> STypeNumberPtr;
 
 class STypeSymbol : public STypeBase {
+    // must have at least one virtual class
 public:
     string symbol_name;
-    Type symbol_type;
+    Type symbol_ret_type;
     int offset;
+    STypeSymbol(string& symbol_name, Type symbol_type, int offset);
+    virtual ~STypeSymbol() = default;
 };
 
 typedef shared_ptr<STypeSymbol> STypeSymbolPtr;
 
-class STypeArgList : public STypeBase {
-public:
-    ArgList arg_list;
-};
-
-typedef shared_ptr<STypeArgList> STypeArgListPtr;
-
 class STypeVariableSymbol : public STypeSymbol {
 public:
+    STypeVariableSymbol(string& symbol_name, Type symbol_type, int offset);
 };
 
 typedef shared_ptr<STypeVariableSymbol> STypeVariableSymbolPtr;
+typedef vector<STypeVariableSymbol> ArgList;
+
+class STypeArgList : public STypeBase {
+public:
+    ArgList arg_list;
+    STypeArgList();
+    explicit STypeArgList(ArgList &arg_list);
+};
+
+typedef shared_ptr<STypeArgList> STypeArgListPtr;
 
 
 class STypeFunctionSymbol : public STypeSymbol {
 public:
     ArgList parameters;
-    Type return_type;
+    STypeFunctionSymbol(string& symbol_name, Type symbol_type, int offset, ArgList &arg_list);
+
 };
 
 typedef shared_ptr<STypeFunctionSymbol> STypeFunctionSymbolPtr;
 
-#endif //HW3_TYPEDEFS_H
+extern string TypeToString(Type type);
+extern void ArgListToStrings(ArgList &arg_list, vector<string> &string_vector);
+
+#endif //HWw3_TYPEDEFS_H

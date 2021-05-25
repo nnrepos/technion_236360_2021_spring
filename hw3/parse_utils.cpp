@@ -1,14 +1,21 @@
 #include "parse_utils.h"
 
+ParseUtils::ParseUtils() : symbol_table(), semantic_checks(symbol_table) {
+
+}
 
 
-ParseUtils &ParseUtils::instance()
-{
+ParseUtils &ParseUtils::instance() {
     static ParseUtils parse_utils;
     return parse_utils;
 }
 
 void ParseUtils::ParseProgram(int lineno) {
+    if (!semantic_checks.IsMainDefined()){
+        errorMainMissing();
+        exit(0);
+    }
+
 
 }
 
