@@ -31,46 +31,46 @@ plusMinus       (\+|-)
 
 %%
 
-"void"						return VOID;
-"int"						return INT;
-"byte" 						return BYTE;
-"b"							return B;
-"bool"						return BOOL;
-"and" 						return AND;
-"or" 						return OR;
-"not" 						return NOT;
-"true" 						return TRUE;
-"false" 					return FALSE;
-"return" 					return RETURN;
-"if" 						return IF;
-"else" 						return ELSE;
-"while" 					return WHILE;
-"break" 					return BREAK;
-"continue"					return CONTINUE;
-"switch"					return SWITCH;
-"case"		    			return CASE;
-"default"					return DEFAULT;
-":"	        				return COLON;
-";" 						return SC;
-"," 						return COMMA;
-"(" 						return LPAREN;
-")" 						return RPAREN;
-"{" 						return LBRACE;
-"}" 						return RBRACE;
-{equalUnequal}				return EQUAL_UNEQUAL;
-{inequality}				return INEQUALITY;
-"=" 						return ASSIGN;
-{multDiv}					return MULT_DIV;
-{plusMinus}					return PLUS_MINUS;
+"void"						return LexToken(VOID, yytext);
+"int"						return LexToken(INT, yytext);
+"byte" 						return LexToken(BYTE, yytext);
+"b"							return LexToken(B, yytext);
+"bool"						return LexToken(BOOL, yytext);
+"and" 						return LexToken(AND, yytext);
+"or" 						return LexToken(OR, yytext);
+"not" 						return LexToken(NOT, yytext);
+"true" 						return LexToken(TRUE, yytext);
+"false" 					return LexToken(FALSE, yytext);
+"return" 					return LexToken(RETURN, yytext);
+"if" 						return LexToken(IF, yytext);
+"else" 						return LexToken(ELSE, yytext);
+"while" 					return LexToken(WHILE, yytext);
+"break" 					return LexToken(BREAK, yytext);
+"continue"					return LexToken(CONTINUE, yytext);
+"switch"					return LexToken(SWITCH, yytext);
+"case"		    			return LexToken(CASE, yytext);
+"default"					return LexToken(DEFAULT, yytext);
+":"	        				return LexToken(COLON, yytext);
+";" 						return LexToken(SC, yytext);
+"," 						return LexToken(COMMA, yytext);
+"(" 						return LexToken(LPAREN, yytext);
+")" 						return LexToken(RPAREN, yytext);
+"{" 						return LexToken(LBRACE, yytext);
+"}" 						return LexToken(RBRACE, yytext);
+{equalUnequal}				return LexToken(EQUAL_UNEQUAL, yytext);
+{inequality}				return LexToken(INEQUALITY, yytext);
+"=" 						return LexToken(ASSIGN, yytext);
+{multDiv}					return LexToken(MULT_DIV, yytext);
+{plusMinus}					return LexToken(PLUS_MINUS, yytext);
 {lineComment}				;
-{letter}{alphanum}*			return ID;
-"0"							return NUM;
-{nonzerodigit}{digit}* 		return NUM;
+{letter}{alphanum}*			return LexToken(ID, yytext);
+"0"							return LexToken(NUM, yytext);
+{nonzerodigit}{digit}* 		return LexToken(NUM, yytext);
 <INITIAL>{strsign}			textbuffptr = textbuff; BEGIN(STR);
 <STR>{lf}					errorLex(yylineno);
 <STR>{cr}					errorLex(yylineno);
 <STR>{bs}					BEGIN(STRES)  ;
-<STR>{strsign}				*textbuffptr = '\0';	BEGIN(INITIAL);	return STRING;
+<STR>{strsign}				*textbuffptr = '\0';	BEGIN(INITIAL);	return LexToken(STRING, textbuff);
 <STR>.						*textbuffptr = *yytext;	textbuffptr++;
 <STRES>{strsign}			*textbuffptr = '\"';	textbuffptr++;	BEGIN(STR);
 <STRES>"n"					*textbuffptr = '\n';	textbuffptr++;	BEGIN(STR);
@@ -80,7 +80,7 @@ plusMinus       (\+|-)
 <STRES>"0"					*textbuffptr = '\0';	textbuffptr++;	BEGIN(STR);
 <STRES>"x"					BEGIN(STRESX);
 <STRES>.					textbuffptr = textbuff;	*textbuffptr++ = *yytext; BEGIN(STRESE);
-<STRESX>[0-7]{hexdigit}     *textbuffptr = hexaToChar(yytext[0], yytext[1]);	textbuffptr++;	BEGIN(STR);
+<STRESX>[0-7]{hexdigit}     *textbuffptr = HexaToChar(yytext[0], yytext[1]);	textbuffptr++;	BEGIN(STR);
 <STRESX>{strsign}			errorLex(yylineno);
 <STRESX>({lf}|{cr})			errorLex(yylineno);
 <STRESX>.{strsign}			errorLex(yylineno);
@@ -95,7 +95,7 @@ plusMinus       (\+|-)
 
 %%
 
-char hexaToChar(const char f,const char s){
+char HexaToChar(const char f,const char s){
 	int sum = 0;
 
 	switch(f){

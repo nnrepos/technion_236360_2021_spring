@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.12) # Optional..
-project(hw2)
+project(hw3)
 
 set(CMAKE_CXX_STANDARD 14) # C++ 14 is needed for the following commands!
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -Wall -g") # -O0 flag to disable compiler optimizations
@@ -23,4 +23,4 @@ ADD_FLEX_BISON_DEPENDENCY(Lexer Parser)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 ADD_EXECUTABLE(hw3 ${FLEX_Lexer_OUTPUTS} ${BISON_Parser_OUTPUTS}
-               hw3_output.cpp typedefs.cpp parse_tools.cpp hw3_output.cpp)
+               hw3_output.cpp typedefs.cpp parse_utils.cpp hw3_output.cpp semantics.cpp symbol_table.cpp main.cpp)

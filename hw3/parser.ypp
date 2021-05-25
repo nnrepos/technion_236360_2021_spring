@@ -1,6 +1,5 @@
 %{
-#include "output.hpp"
-
+#include "parse_utils.h"
 %}
 
 %token VOID
@@ -58,115 +57,117 @@
 %%
 
 Program: Funcs
-    {printProductionRule(1);}
+    {ParseUtils::instance().ParseProgram(yylineno);}
 Funcs: %empty
-    {printProductionRule(2);}
+    {ParseUtils::instance().ParseFuncs(yylineno);}
 Funcs: FuncDecl Funcs
-    {printProductionRule(3);}
-FuncDecl: RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
-    {printProductionRule(4);}
+    {ParseUtils::instance().ParseFuncs(yylineno);}
+FuncDecl: FuncHead LBRACE Statements RBRACE
+    {ParseUtils::instance().ParseFuncDecl(yylineno, $1);}
+FuncHead: RetType ID LPAREN Formals RPAREN
+    {$$ = ParseUtils::instance().ParseFuncHead(yylineno, $1, $2, $4);}
 RetType: Type
-    {printProductionRule(5);}
+    {$$ = ParseUtils::instance().ParseRetType(yylineno, $1);}
 RetType: VOID
-    {printProductionRule(6);}
+    {$$ = ParseUtils::instance().ParseRetType(yylineno);}
 Formals: %empty
-    {printProductionRule(7);}
+    {$$ = ParseUtils::instance().ParseFormals(yylineno);}
 Formals: FormalsList
-    {printProductionRule(8);}
+    {$$ = ParseUtils::instance().ParseFormals(yylineno, $1);}
 FormalsList: FormalDecl
-    {printProductionRule(9);}
+    {$$ = ParseUtils::instance().ParseFormalsList(yylineno);}
 FormalsList: FormalDecl COMMA FormalsList
-    {printProductionRule(10);}
+    {$$ = ParseUtils::instance().ParseFormalsList(yylineno, $1);}
 FormalDecl: Type ID
-    {printProductionRule(11);}
+    {$$ = ParseUtils::instance().ParseFormalDecl(yylineno);}
 Statements: Statement
-    {printProductionRule(12);}
+    {$$ = ParseUtils::instance().ParseStatements(yylineno);}
 Statements: Statements Statement
-    {printProductionRule(13);}
+    {$$ = ParseUtils::instance().ParseStatements(yylineno, $1);}
 Statement: LBRACE Statements RBRACE
-    {printProductionRule(14);}
+    {$$ = ParseUtils::instance().ParseStatementOfStatements(yylineno);}
 Statement: Type ID SC
-    {printProductionRule(15);}
+    {$$ = ParseUtils::instance().ParseStatementType(yylineno);}
 Statement: Type ID ASSIGN Exp SC
-    {printProductionRule(16);}
+    {$$ = ParseUtils::instance().ParseStatementTypeAssign(yylineno);}
 Statement: ID ASSIGN Exp SC
-    {printProductionRule(17);}
+    {$$ = ParseUtils::instance().ParseStatementAssign(yylineno);}
 Statement: Call SC
-    {printProductionRule(18);}
+    {$$ = ParseUtils::instance().ParseStatementCall(yylineno);}
 Statement: RETURN SC
-    {printProductionRule(19);}
+    {$$ = ParseUtils::instance().ParseStatementReturn(yylineno);}
 Statement: RETURN Exp SC
-    {printProductionRule(20);}
+    {$$ = ParseUtils::instance().ParseStatementReturnExp(yylineno);}
 Statement: IF LPAREN Exp RPAREN Statement
-    {printProductionRule(21);}
+    {$$ = ParseUtils::instance().ParseStatementIf(yylineno);}
 Statement: IF LPAREN Exp RPAREN Statement ELSE Statement
-    {printProductionRule(22);}
+    {$$ = ParseUtils::instance().ParseStatementIfElse(yylineno);}
 Statement: WHILE LPAREN Exp RPAREN Statement
-    {printProductionRule(23);}
+    {$$ = ParseUtils::instance().ParseStatementWhile(yylineno);}
 Statement: BREAK SC
-    {printProductionRule(24);}
+    {$$ = ParseUtils::instance().ParseStatementBreak(yylineno);}
 Statement: CONTINUE SC
-    {printProductionRule(25);}
+    {$$ = ParseUtils::instance().ParseStatementContinue(yylineno);}
 Statement:  SWITCH LPAREN Exp RPAREN LBRACE CaseList RBRACE
-    {printProductionRule(26);}
+    {$$ = ParseUtils::instance().ParseStatementSwitch(yylineno);}
 Call: ID LPAREN ExpList RPAREN
-    {printProductionRule(27);}
+    {$$ = ParseUtils::instance().ParseCall(yylineno);}
 Call: ID LPAREN RPAREN
-    {printProductionRule(28);}
+    {$$ = ParseUtils::instance().ParseCall(yylineno, $1);}
 ExpList: Exp
-    {printProductionRule(29);}
+    {$$ = ParseUtils::instance().ParseExplist(yylineno);}
 ExpList: Exp COMMA ExpList
-    {printProductionRule(30);}
+    {$$ = ParseUtils::instance().ParseExplist(yylineno, $1);}
 Type: INT
-    {printProductionRule(31);}
+    {$$ = ParseUtils::instance().ParseInt(yylineno);}
 Type: BYTE
-    {printProductionRule(32);}
+    {$$ = ParseUtils::instance().ParseByte(yylineno);}
 Type: BOOL
-    {printProductionRule(33);}
+    {$$ = ParseUtils::instance().ParseBool(yylineno);}
 Exp: LPAREN Exp RPAREN
-    {printProductionRule(34);}
+    {$$ = ParseUtils::instance().ParseParentheses(yylineno);}
 Exp: Exp PLUS_MINUS Exp
-    {printProductionRule(35);}
+    {$$ = ParseUtils::instance().ParseBinop(yylineno);}
 Exp: Exp MULT_DIV Exp
-    {printProductionRule(35);}
+    {$$ = ParseUtils::instance().ParseBinop(yylineno);}
 Exp: ID
-    {printProductionRule(36);}
+    {$$ = ParseUtils::instance().ParseID(yylineno);}
 Exp: Call
-    {printProductionRule(37);}
+    {$$ = ParseUtils::instance().ParseCallExp(yylineno);}
 Exp: NUM
-    {printProductionRule(38);}
+    {$$ = ParseUtils::instance().ParseNum(yylineno);}
 Exp: NUM B
-    {printProductionRule(39);}
+    {$$ = ParseUtils::instance().ParseNumB(yylineno);}
 Exp: STRING
-    {printProductionRule(40);}
+    {$$ = ParseUtils::instance().ParseString(yylineno);}
 Exp: TRUE
-    {printProductionRule(41);}
+    {$$ = ParseUtils::instance().ParseTrue(yylineno);}
 Exp: FALSE
-    {printProductionRule(42);}
+    {$$ = ParseUtils::instance().ParseFalse(yylineno);}
 Exp: NOT Exp
-    {printProductionRule(43);}
+    {$$ = ParseUtils::instance().ParseNot(yylineno);}
 Exp: Exp AND Exp
-    {printProductionRule(44);}
+    {$$ = ParseUtils::instance().ParseAnd(yylineno);}
 Exp: Exp OR Exp
-    {printProductionRule(45);}
+    {$$ = ParseUtils::instance().ParseOr(yylineno);}
 Exp: Exp EQUAL_UNEQUAL Exp
-    {printProductionRule(46);}
+    {$$ = ParseUtils::instance().ParseRelOp(yylineno);}
 Exp: Exp INEQUALITY Exp
-    {printProductionRule(46);}
+    {$$ = ParseUtils::instance().ParseRelOp(yylineno);}
 Exp: LPAREN Type RPAREN Exp
-    {printProductionRule(47);}
+    {$$ = ParseUtils::instance().ParseCast(yylineno);}
 CaseList: CaseDecl CaseList
-    {printProductionRule(48);}
+    {$$ = ParseUtils::instance().ParseCaseList(yylineno);}
 CaseList: CaseDecl
-    {printProductionRule(49);}
+    {$$ = ParseUtils::instance().ParseCaseList(yylineno, $1);}
 CaseList: DEFAULT COLON Statements
-    {printProductionRule(50);}
+    {$$ = ParseUtils::instance().ParseCaseDefault(yylineno);}
 CaseDecl: CASE NUM COLON Statements
-    {printProductionRule(51);}
+    {$$ = ParseUtils::instance().ParseCaseDecl(yylineno);}
 
 %%
 
-int yyerror(const char * message)
+void yyerror(const char * message)
 {
 	errorSyn(yylineno);
 	exit(0);
