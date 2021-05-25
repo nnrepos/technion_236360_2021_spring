@@ -1,0 +1,173 @@
+%{
+#include "output.hpp"
+
+%}
+
+%token VOID
+%token INT
+%token BYTE
+%token B
+%token BOOL
+%token TRUE
+%token FALSE
+%token RETURN
+%token IF
+%token WHILE
+%token BREAK
+%token CONTINUE
+%token SC
+%token COMMA
+%token ID
+%token NUM
+%token STRING
+%token DOTS
+%token SWITCH
+%token CASE
+%token DEFAULT
+%token COLON
+
+//priority 1
+%right ASSIGN
+
+//priority 3
+%left OR
+
+//priority 4
+%left AND
+
+// priority 8
+%left EQUAL_UNEQUAL
+
+// priority 9
+%nonassoc INEQUALITY
+
+// priority 11
+%left PLUS_MINUS
+
+// priority 12
+%left MULT_DIV
+
+// priority 14
+%right NOT
+
+// priority 16
+%left LBRACKET RBRACKET LBRACE RBRACE LPAREN RPAREN
+
+// top priority (dangling else)
+%right ELSE
+%%
+
+Program: Funcs
+    {printProductionRule(1);}
+Funcs: %empty
+    {printProductionRule(2);}
+Funcs: FuncDecl Funcs
+    {printProductionRule(3);}
+FuncDecl: RetType ID LPAREN Formals RPAREN LBRACE Statements RBRACE
+    {printProductionRule(4);}
+RetType: Type
+    {printProductionRule(5);}
+RetType: VOID
+    {printProductionRule(6);}
+Formals: %empty
+    {printProductionRule(7);}
+Formals: FormalsList
+    {printProductionRule(8);}
+FormalsList: FormalDecl
+    {printProductionRule(9);}
+FormalsList: FormalDecl COMMA FormalsList
+    {printProductionRule(10);}
+FormalDecl: Type ID
+    {printProductionRule(11);}
+Statements: Statement
+    {printProductionRule(12);}
+Statements: Statements Statement
+    {printProductionRule(13);}
+Statement: LBRACE Statements RBRACE
+    {printProductionRule(14);}
+Statement: Type ID SC
+    {printProductionRule(15);}
+Statement: Type ID ASSIGN Exp SC
+    {printProductionRule(16);}
+Statement: ID ASSIGN Exp SC
+    {printProductionRule(17);}
+Statement: Call SC
+    {printProductionRule(18);}
+Statement: RETURN SC
+    {printProductionRule(19);}
+Statement: RETURN Exp SC
+    {printProductionRule(20);}
+Statement: IF LPAREN Exp RPAREN Statement
+    {printProductionRule(21);}
+Statement: IF LPAREN Exp RPAREN Statement ELSE Statement
+    {printProductionRule(22);}
+Statement: WHILE LPAREN Exp RPAREN Statement
+    {printProductionRule(23);}
+Statement: BREAK SC
+    {printProductionRule(24);}
+Statement: CONTINUE SC
+    {printProductionRule(25);}
+Statement:  SWITCH LPAREN Exp RPAREN LBRACE CaseList RBRACE
+    {printProductionRule(26);}
+Call: ID LPAREN ExpList RPAREN
+    {printProductionRule(27);}
+Call: ID LPAREN RPAREN
+    {printProductionRule(28);}
+ExpList: Exp
+    {printProductionRule(29);}
+ExpList: Exp COMMA ExpList
+    {printProductionRule(30);}
+Type: INT
+    {printProductionRule(31);}
+Type: BYTE
+    {printProductionRule(32);}
+Type: BOOL
+    {printProductionRule(33);}
+Exp: LPAREN Exp RPAREN
+    {printProductionRule(34);}
+Exp: Exp PLUS_MINUS Exp
+    {printProductionRule(35);}
+Exp: Exp MULT_DIV Exp
+    {printProductionRule(35);}
+Exp: ID
+    {printProductionRule(36);}
+Exp: Call
+    {printProductionRule(37);}
+Exp: NUM
+    {printProductionRule(38);}
+Exp: NUM B
+    {printProductionRule(39);}
+Exp: STRING
+    {printProductionRule(40);}
+Exp: TRUE
+    {printProductionRule(41);}
+Exp: FALSE
+    {printProductionRule(42);}
+Exp: NOT Exp
+    {printProductionRule(43);}
+Exp: Exp AND Exp
+    {printProductionRule(44);}
+Exp: Exp OR Exp
+    {printProductionRule(45);}
+Exp: Exp EQUAL_UNEQUAL Exp
+    {printProductionRule(46);}
+Exp: Exp INEQUALITY Exp
+    {printProductionRule(46);}
+Exp: LPAREN Type RPAREN Exp
+    {printProductionRule(47);}
+CaseList: CaseDecl CaseList
+    {printProductionRule(48);}
+CaseList: CaseDecl
+    {printProductionRule(49);}
+CaseList: DEFAULT COLON Statements
+    {printProductionRule(50);}
+CaseDecl: CASE NUM COLON Statements
+    {printProductionRule(51);}
+
+%%
+
+int yyerror(const char * message)
+{
+	errorSyn(yylineno);
+	exit(0);
+}
