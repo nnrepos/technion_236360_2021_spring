@@ -31,12 +31,12 @@ extern char *textbuffptr;
 
 enum GeneralTypeEnum {
     VOID_TYPE,
-    INT_TYPE,  // this might be a number or a variable
+    INT_TYPE,  // this might be a number literal or a variable (same for the others)
     BYTE_TYPE,
     BOOL_TYPE,
     STRING_TYPE,
     FUNCTION_TYPE,
-    TYPE_TYPE,
+    TYPE_TYPE, // TODO: remove this
     OTHER_TYPE
 
 };
@@ -47,7 +47,7 @@ class STypeBase {
     // must have at least one virtual method
 public:
 
-    explicit STypeBase(Type type);  // also used for expressions
+    explicit STypeBase(Type type);  // also used for expressions and types
 
     Type general_type;
 
@@ -96,7 +96,7 @@ typedef shared_ptr<STypeNumber> STypeNumberPtr;
 class STypeBool : public STypeBase {
 public:
     bool token;
-    explicit STypeBool(string& token_string);
+    explicit STypeBool(bool token);
 };
 
 typedef shared_ptr<STypeBool> STypeBoolPtr;

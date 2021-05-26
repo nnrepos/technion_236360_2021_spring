@@ -10,15 +10,15 @@ public:
     bool IsSymbolDefined(string &name);
     bool IsMainDefined();
     bool IsLegalAssignTypes(Type first, Type second);
-    bool IsLegalCallTypes(STypeFunctionSymbolPtr &func, STypeExpListPtr &arg_list);
+    bool IsLegalCallTypes(STypeFunctionSymbolPtr &func, STypeExpListPtr &exp_list);
     bool IsLegalReturnType(Type type);
     bool IsBoolType(Type type);
     bool IsFunctionType(Type type);
     bool IsLegalBreakContinue();
     bool IsByteOverflow(int &num);
-    bool IsLegalRelopTypes(Type first, string &relop, Type second);
+    bool IsLegalRelopTypes(Type first, Type second);
     bool IsLegalCast(Type first, Type second);
-    Type CheckAndGetBinOpType(Type first, string &binop, Type second);
+    Type CheckAndGetBinOpType(Type first, Type second);
 
 
 };

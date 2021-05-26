@@ -12,8 +12,7 @@ STypeNumber::STypeNumber(string &token_string) : STypeBase(INT_TYPE) {
     token = stoi(token_string);
 }
 
-STypeBool::STypeBool(string &token_string) : STypeBase(BOOL_TYPE) {
-    token = (token_string == "true");
+STypeBool::STypeBool(bool token) : STypeBase(BOOL_TYPE), token(token) {
 }
 
 STypeCType::STypeCType(Type type) : STypeBase(TYPE_TYPE), type(type) {

@@ -86,39 +86,37 @@ public:
 
     STypePtr ParseParentheses(int lineno, STypePtr exp);
 
-    STypePtr ParseBinop(int lineno);
+    STypePtr ParseBinop(int lineno, STypePtr exp1, STypePtr exp2);
 
-    STypePtr ParseID(int lineno);
+    STypeStringPtr ParseID(int lineno, STypePtr id);
 
-    STypePtr ParseCallExp(int lineno);
+    STypePtr ParseCallExp(int lineno, STypePtr call_exp);
 
-    STypePtr ParseNum(int lineno, STypePtr num);
+    STypeNumberPtr ParseNum(int lineno, STypePtr num);
 
     STypePtr ParseNumB(int lineno, STypePtr num);
 
-    STypePtr ParseString(int lineno);
+    STypePtr ParseString(int lineno, STypePtr strrrrrraaa);
 
-    STypePtr ParseTrue(int lineno);
+    STypeBoolPtr ParseTrue(int lineno);
 
-    STypePtr ParseFalse(int lineno);
+    STypeBoolPtr ParseFalse(int lineno);
 
-    STypePtr ParseNot(int lineno);
+    STypeBoolPtr ParseNot(int lineno, STypePtr bool_exp);
 
-    STypePtr ParseAnd(int lineno);
+    STypeBoolPtr ParseAnd(int lineno, STypePtr bool_exp1, STypePtr bool_exp2);
 
-    STypePtr ParseOr(int lineno);
+    STypeBoolPtr ParseOr(int lineno, STypePtr bool_exp1, STypePtr bool_exp2);
 
-    STypePtr ParseRelOp(int lineno);
+    STypeBoolPtr ParseRelOp(int lineno, STypePtr exp1, STypePtr exp2);
 
-    STypePtr ParseCast(int lineno);
+    STypePtr ParseCast(int lineno, STypePtr type, STypePtr exp);
 
-    STypePtr ParseCaseList(int lineno);
+    void ParseCaseList(int lineno);
 
-    STypePtr ParseCaseList(int lineno, STypePtr x);
+    void ParseCaseDefault(int lineno);
 
-    STypePtr ParseCaseDefault(int lineno);
-
-    STypePtr ParseCaseDecl(int lineno);
+    void ParseCaseDecl(int lineno);
 
     void ParsePushStatementScope(int lineno);
 

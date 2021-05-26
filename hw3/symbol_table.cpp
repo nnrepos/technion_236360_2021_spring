@@ -36,12 +36,12 @@ void SymbolTable::PopScope() {
     if (scope_stack.top()->scope_type == GLOBAL_SCOPE) {
         for (const auto &func_symbol:scope_stack.top()->symbols) {
             assert(func_symbol->general_type == FUNCTION_TYPE);
-            auto casted_func = dynamic_pointer_cast<STypeFunctionSymbol>(func_symbol);
+            auto dynamic_cast_func = dynamic_pointer_cast<STypeFunctionSymbol>(func_symbol);
             vector<string> string_types;
-            ArgListToStrings(casted_func->parameters, string_types);
-            string ret_type = TypeToString(casted_func->ret_type);
-            printID(casted_func->name, 0, makeFunctionType(ret_type, string_types));
-            symbols_map.erase(casted_func->name);
+            ArgListToStrings(dynamic_cast_func->parameters, string_types);
+            string ret_type = TypeToString(dynamic_cast_func->ret_type);
+            printID(dynamic_cast_func->name, 0, makeFunctionType(ret_type, string_types));
+            symbols_map.erase(dynamic_cast_func->name);
         }
 
     } else {

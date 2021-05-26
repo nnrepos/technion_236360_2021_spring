@@ -16,11 +16,6 @@ int LexToken(int bison_enum, string token) {
     STypePtr result(nullptr);
 
     switch (bison_enum) {
-        case ID: {
-            STypeStringPtr new_result(new STypeString(token));
-            result = new_result;
-        }
-            break;
         case NUM: {
             STypeNumberPtr new_result(new STypeNumber(token));
             result = new_result;
@@ -32,6 +27,7 @@ int LexToken(int bison_enum, string token) {
             result = new_result;
         }
             break;
+        case ID:
         case STRING: {
             STypeStringPtr new_result(new STypeString(token));
             result = new_result;

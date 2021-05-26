@@ -127,43 +127,43 @@ Type: BOOL
 Exp: LPAREN Exp RPAREN
     {$$ = ParseUtils::instance().ParseParentheses(yylineno, $1);}
 Exp: Exp PLUS_MINUS Exp
-    {$$ = ParseUtils::instance().ParseBinop(yylineno);}
+    {$$ = ParseUtils::instance().ParseBinop(yylineno, $1, $3);}
 Exp: Exp MULT_DIV Exp
-    {$$ = ParseUtils::instance().ParseBinop(yylineno);}
+    {$$ = ParseUtils::instance().ParseBinop(yylineno, $1, $3);}
 Exp: ID
-    {$$ = ParseUtils::instance().ParseID(yylineno);}
+    {$$ = ParseUtils::instance().ParseID(yylineno, $1);}
 Exp: Call
-    {$$ = ParseUtils::instance().ParseCallExp(yylineno);}
+    {$$ = ParseUtils::instance().ParseCallExp(yylineno, $1);}
 Exp: NUM
     {$$ = ParseUtils::instance().ParseNum(yylineno, $1);}
 Exp: NUM B
     {$$ = ParseUtils::instance().ParseNumB(yylineno, $1);}
 Exp: STRING
-    {$$ = ParseUtils::instance().ParseString(yylineno);}
+    {$$ = ParseUtils::instance().ParseString(yylineno, $1);}
 Exp: TRUE
     {$$ = ParseUtils::instance().ParseTrue(yylineno);}
 Exp: FALSE
     {$$ = ParseUtils::instance().ParseFalse(yylineno);}
 Exp: NOT Exp
-    {$$ = ParseUtils::instance().ParseNot(yylineno);}
+    {$$ = ParseUtils::instance().ParseNot(yylineno, $2);}
 Exp: Exp AND Exp
-    {$$ = ParseUtils::instance().ParseAnd(yylineno);}
+    {$$ = ParseUtils::instance().ParseAnd(yylineno, $1, $3);}
 Exp: Exp OR Exp
-    {$$ = ParseUtils::instance().ParseOr(yylineno);}
+    {$$ = ParseUtils::instance().ParseOr(yylineno, $1, $3);}
 Exp: Exp EQUAL_UNEQUAL Exp
-    {$$ = ParseUtils::instance().ParseRelOp(yylineno);}
+    {$$ = ParseUtils::instance().ParseRelOp(yylineno, $1, $3);}
 Exp: Exp INEQUALITY Exp
-    {$$ = ParseUtils::instance().ParseRelOp(yylineno);}
+    {$$ = ParseUtils::instance().ParseRelOp(yylineno, $1, $3);}
 Exp: LPAREN Type RPAREN Exp
-    {$$ = ParseUtils::instance().ParseCast(yylineno);}
+    {$$ = ParseUtils::instance().ParseCast(yylineno, $2, $4);}
 CaseList: CaseDecl CaseList
-    {$$ = ParseUtils::instance().ParseCaseList(yylineno);}
+    {ParseUtils::instance().ParseCaseList(yylineno);}
 CaseList: CaseDecl
-    {$$ = ParseUtils::instance().ParseCaseList(yylineno, $1);}
+    {ParseUtils::instance().ParseCaseList(yylineno);}
 CaseList: DEFAULT COLON Statements
-    {$$ = ParseUtils::instance().ParseCaseDefault(yylineno);}
+    {ParseUtils::instance().ParseCaseDefault(yylineno);}
 CaseDecl: CASE NUM COLON Statements
-    {$$ = ParseUtils::instance().ParseCaseDecl(yylineno);}
+    {ParseUtils::instance().ParseCaseDecl(yylineno);}
 PushStatementScope: %empty
     {ParseUtils::instance().ParsePushStatementScope(yylineno);}
 PushWhileScope: %empty
