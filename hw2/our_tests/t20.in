@@ -1,0 +1,25 @@
+int f(int x,int y)
+{
+    a=r+3*t/5;
+    if(a*2){
+        int i;
+    } else{
+        if (a) x=2; else x=3;
+    }
+    if(a > i){
+        int i = 1;
+    } else{
+        i=1;
+        if(a != 2)
+		{
+            i=2 + a;
+            if(a){
+                i=3;
+            } else {
+                i=2;
+            }
+        }  i=3;
+
+    }
+    
+}

@@ -1,0 +1,31 @@
+bool uselessFunc(int x, int y)
+{
+    return x < y;
+}
+
+int return6()
+{
+    return 6;
+}
+
+void main() {
+    int s = 0;
+    s = s + 4;
+    switch (s) {
+        case 1:
+            printi(s);
+            break;
+        case 2:
+            s = s + 2;
+            break;
+        default:
+            s = s - 2;
+    }
+    bool c = uselessFunc(s, s);
+    if (not c) {
+        int x = return6();
+        printi(x);
+    }
+    else
+        syntactical mistake;
+}

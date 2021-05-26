@@ -1,0 +1,18 @@
+int f(int a1, int b1, int c1){
+
+    int n = 4 + 3*5/(1+2);
+
+    bool q = true or false and true;
+    bool q2 = true and false or true;
+	bool q3 = 3 == 3 and 2 == 1:
+	bool q4 = 4 + 5 == 2 or 3+3 == 6;
+
+    int n = 3+1*2;
+    int n = 3*1+2;
+    int n = 3*(1+2);
+	int d = 3*3/(4+5) - 1;
+	int d = 1+1- 4+9+ (4*5)
+	
+
+
+}

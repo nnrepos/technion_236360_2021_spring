@@ -1,0 +1,12 @@
+6: RetType ->  VOID
+7: Formals -> epsilon
+38: Exp -> NUM
+38: Exp -> NUM
+38: Exp -> NUM
+35: Exp -> Exp BINOP Exp
+34: Exp -> LPAREN Exp RPAREN
+35: Exp -> Exp BINOP Exp
+38: Exp -> NUM
+35: Exp -> Exp BINOP Exp
+34: Exp -> LPAREN Exp RPAREN
+line 3: syntax error

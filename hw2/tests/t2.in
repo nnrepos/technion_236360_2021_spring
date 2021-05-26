@@ -1,0 +1,4 @@
+int danglingElse(int a1, int a2, int a3)
+{
+    if(a1) if(a2) if(a3) return true; else return false;
+}

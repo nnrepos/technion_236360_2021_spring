@@ -1,0 +1,8 @@
+//test
+void main()
+{
+  if(3 = 89 == 10){
+    printf("abd\n", 11, x);
+  }
+  else if (true) eat();
+}

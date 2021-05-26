@@ -1,0 +1,10 @@
+void f(){i=1;}
+
+int g(bool x, byte b1)
+{
+    x =(y or d)and t;
+    x = (8*7-6+2+8-8-8*(8-8 and 4) or true) <= (9==8!=1<8!=3==9!=2);
+    x = true and not false or a==a;
+	t = not(true) or not(false) == not(true and false)
+	d = t+d >= x+x*2 > 1 == false
+}

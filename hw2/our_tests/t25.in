@@ -1,0 +1,13 @@
+//test
+void printOk(bool isOk) {
+    if (isOk) print("ok") return 1 else (not(isOk)) print("not ok man") return 0;
+}
+
+void main()
+{
+    int  x = 4;
+	if (printOk(x>y)) print("well done");
+    byte y = 100 b;
+    x y = 1;
+    int z;
+}

@@ -1,0 +1,34 @@
+31: Type -> INT
+5: RetType -> Type
+31: Type -> INT
+11: FormalDecl -> Type ID
+31: Type -> INT
+11: FormalDecl -> Type ID
+9: FormalsList -> FormalDecl
+10: FormalsList -> FormalDecl COMMA FormalsList
+8: Formals -> FormalsList
+36: Exp -> ID
+38: Exp -> NUM
+36: Exp -> ID
+35: Exp -> Exp BINOP Exp
+38: Exp -> NUM
+35: Exp -> Exp BINOP Exp
+35: Exp -> Exp BINOP Exp
+17: Statement -> ID ASSIGN Exp SC
+12: Statements -> Statement
+36: Exp -> ID
+31: Type -> INT
+15: Statement -> Type ID SC
+12: Statements -> Statement
+14: Statement -> LBRACE Statements RBRACE
+36: Exp -> ID
+38: Exp -> NUM
+17: Statement -> ID ASSIGN Exp SC
+38: Exp -> NUM
+17: Statement -> ID ASSIGN Exp SC
+22: Statement -> IF LPAREN Exp RPAREN Statement ELSE Statement
+12: Statements -> Statement
+14: Statement -> LBRACE Statements RBRACE
+22: Statement -> IF LPAREN Exp RPAREN Statement ELSE Statement
+13: Statements -> Statements Statement
+line 8: syntax error

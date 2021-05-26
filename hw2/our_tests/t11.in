@@ -1,0 +1,5 @@
+void A345()
+{
+  int x = (int)(bool)(int)x;
+  x = 3 = 4;
+}

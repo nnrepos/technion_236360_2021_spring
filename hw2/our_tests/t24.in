@@ -1,0 +1,10 @@
+int f()
+{
+    s = (1+(3*3)-2))+5 + s*s + f;
+	t = 1 < 3;
+	int n = 1;
+	int f = false;
+	bool b = true and true;
+	byte b = 16 b;
+	byte b = ((16 b) + 15b and 1) + 1;
+}

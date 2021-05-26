@@ -1,0 +1,30 @@
+bool uselessFunc(int x, int y)
+{
+    return x < y > a;
+}
+
+int return6()
+{
+    return 6;
+	abz = 1;
+	while (1)
+	{
+			print("1")
+	}
+}
+
+void main() {
+    int s;
+    s = s + 4;
+    s = s + 50;
+    bool c = 50 in s;
+    if (not c) {
+        int x = return6();
+        printi(x);
+    }
+    else
+        syntactical mistake;
+	switch(s):
+	 case 1: print("1");
+	 default: print("default");
+}
