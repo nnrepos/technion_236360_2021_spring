@@ -78,6 +78,8 @@ void SymbolTable::PopScope() {
         }
     }
 
+
+    current_offset = scope_stack.top()->offset;
     scope_stack.pop();
 }
 
@@ -96,7 +98,7 @@ void SymbolTable::AddParam(const STypeSymbolPtr &symbol) {
 void SymbolTable::AddVariable(const STypeSymbolPtr &symbol) {
     // add params only after adding the function
     assert(!scope_stack.empty());
-    symbol->offset = (scope_stack.top()->offset)++;
+    symbol->offset = current_offset++;
     scope_stack.top()->symbols.push_back(symbol);
     symbols_map.emplace(symbol->name, symbol);
 }
