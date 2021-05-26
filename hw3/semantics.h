@@ -14,7 +14,8 @@ public:
     bool IsLegalReturnType(Type type);
     bool IsBoolType(Type type);
     bool IsFunctionType(Type type);
-    bool IsLegalBreakContinue();
+    bool IsLegalBreak();
+    bool IsLegalContinue();
     bool IsByteOverflow(int &num);
     bool IsLegalRelopTypes(Type first, Type second);
     bool IsLegalCast(Type first, Type second);

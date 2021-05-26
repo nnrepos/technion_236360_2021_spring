@@ -20,9 +20,10 @@ public:
     int offset;
     vector<STypeSymbolPtr> symbols;
     Type ret_type;
-    int while_switch_count;
+    bool inside_while;
+    bool inside_switch;
 
-    Scope(ScopeType scope_type, int offset, Type ret_type, int while_switch_count);
+    Scope(ScopeType scope_type, int offset, Type ret_type, bool inside_while, bool inside_switch);
 };
 
 class SymbolTable {

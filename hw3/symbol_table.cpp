@@ -4,7 +4,7 @@
 void SymbolTable::PushDefaultFunctions() {
     // push print
     string message_name = "message";
-    STypeSymbol print_param_symbol(message_name, -1,STRING_TYPE);
+    STypeSymbol print_param_symbol(message_name, -1, STRING_TYPE);
 
     string print_name = "print";
     ArgList print_args;
@@ -14,7 +14,7 @@ void SymbolTable::PushDefaultFunctions() {
 
     // push printi
     string number_name = "number";
-    STypeSymbol printi_param_symbol(number_name, -1,INT_TYPE);
+    STypeSymbol printi_param_symbol(number_name, -1, INT_TYPE);
 
     string printi_name = "printi";
     ArgList printi_args;
@@ -25,30 +25,37 @@ void SymbolTable::PushDefaultFunctions() {
 
 void SymbolTable::PushScope(ScopeType scope_type) {
     Type ret_type;
-    int while_switch_count;
+    bool inside_while, inside_switch;
 
     if (scope_type == GLOBAL_SCOPE) {
         ret_type = OTHER_TYPE;
-        while_switch_count = 0;
+        inside_while = false;
+        inside_switch = false;
     } else {
         assert(!scope_stack.empty());
         ret_type = scope_stack.top()->ret_type;
-        while_switch_count = scope_stack.top()->while_switch_count;
+        inside_while = scope_stack.top()->inside_while;
+        inside_switch = scope_stack.top()->inside_switch;
     }
 
-    if (scope_type == WHILE_SCOPE || scope_type == SWITCH_SCOPE){
-        while_switch_count++;
+    if (scope_type == WHILE_SCOPE) {
+        inside_while = true;
     }
 
-    scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, while_switch_count));
+    if(scope_type == SWITCH_SCOPE){
+        inside_switch = true;
+    }
+
+    scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, inside_while,inside_switch));
 }
 
 void SymbolTable::PushFunctionScope(ScopeType scope_type, Type ret_type, STypeFunctionSymbolPtr function_symbol) {
     assert(!scope_stack.empty());
-    int while_switch_count = scope_stack.top()->while_switch_count;
-    scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, while_switch_count));
+    bool inside_while = scope_stack.top()->inside_while;
+    bool inside_switch = scope_stack.top()->inside_switch;
+    scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, inside_while, inside_switch));
 
-    for (auto param:function_symbol->parameters){
+    for (auto param:function_symbol->parameters) {
         auto param_symbol = make_shared<STypeSymbol>(param);
         AddParam(param_symbol);
     }
@@ -109,7 +116,7 @@ void SymbolTable::AddFunction(const STypeFunctionSymbolPtr &symbol) {
     // set offsets
     symbol->offset = 0;
     auto curr_param_offset = 0;
-    for (auto& param:symbol->parameters){
+    for (auto &param:symbol->parameters) {
         param.offset = --curr_param_offset;
     }
 
@@ -126,7 +133,8 @@ STypeSymbolPtr SymbolTable::GetDefinedSymbol(string &symbol_name) {
 }
 
 
-Scope::Scope(ScopeType scope_type, int offset, Type ret_type, int while_switch_count)
-        : scope_type(scope_type), offset(offset), ret_type(ret_type), while_switch_count(while_switch_count) {
+Scope::Scope(ScopeType scope_type, int offset, Type ret_type, bool inside_while, bool inside_switch)
+        : scope_type(scope_type), offset(offset), ret_type(ret_type), inside_while(inside_while),
+          inside_switch(inside_switch) {
 
 }

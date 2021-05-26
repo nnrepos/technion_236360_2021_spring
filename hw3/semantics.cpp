@@ -25,10 +25,10 @@ bool SemanticChecks::IsMainDefined() {
 }
 
 bool SemanticChecks::IsLegalAssignTypes(Type first, Type second) {
-    if (first == second){
+    if (first == second) {
         return true;
     }
-    if (first == INT_TYPE && second == BYTE_TYPE){
+    if (first == INT_TYPE && second == BYTE_TYPE) {
         return true;
     }
 
@@ -36,12 +36,12 @@ bool SemanticChecks::IsLegalAssignTypes(Type first, Type second) {
 }
 
 bool SemanticChecks::IsLegalCallTypes(STypeFunctionSymbolPtr &func, STypeExpListPtr &exp_list) {
-    if (func->parameters.size() != exp_list->exp_list.size()){
+    if (func->parameters.size() != exp_list->exp_list.size()) {
         return false;
     }
 
-    for (size_t i=0; i<func->parameters.size(); ++i){
-        if (!IsLegalAssignTypes(func->parameters[i].general_type, exp_list->exp_list[i].general_type)){
+    for (size_t i = 0; i < func->parameters.size(); ++i) {
+        if (!IsLegalAssignTypes(func->parameters[i].general_type, exp_list->exp_list[i].general_type)) {
             return false;
         }
     }
@@ -62,8 +62,12 @@ bool SemanticChecks::IsFunctionType(Type type) {
     return (type == FUNCTION_TYPE);
 }
 
-bool SemanticChecks::IsLegalBreakContinue() {
-    return (table_ref.scope_stack.top()->while_switch_count > 0);
+bool SemanticChecks::IsLegalBreak() {
+    return (table_ref.scope_stack.top()->inside_while || table_ref.scope_stack.top()->inside_switch);
+}
+
+bool SemanticChecks::IsLegalContinue() {
+    return (table_ref.scope_stack.top()->inside_while);
 }
 
 bool SemanticChecks::IsByteOverflow(int &num) {
@@ -72,8 +76,8 @@ bool SemanticChecks::IsByteOverflow(int &num) {
 
 bool SemanticChecks::IsLegalRelopTypes(Type first, Type second) {
     // all numeric types are ok
-    if (first == INT_TYPE || first == BYTE_TYPE){
-        if (second == INT_TYPE || second == BYTE_TYPE){
+    if (first == INT_TYPE || first == BYTE_TYPE) {
+        if (second == INT_TYPE || second == BYTE_TYPE) {
             return true;
         }
     }
@@ -81,10 +85,10 @@ bool SemanticChecks::IsLegalRelopTypes(Type first, Type second) {
 }
 
 Type SemanticChecks::CheckAndGetBinOpType(Type first, Type second) {
-    if (!IsLegalRelopTypes(first, second)){
+    if (!IsLegalRelopTypes(first, second)) {
         return OTHER_TYPE;
     }
-    if (first == INT_TYPE || second == INT_TYPE){
+    if (first == INT_TYPE || second == INT_TYPE) {
         return INT_TYPE;
     }
     return BYTE_TYPE;

@@ -195,14 +195,14 @@ void ParseUtils::ParseStatementSwitch(int lineno, STypePtr exp) {
 }
 
 void ParseUtils::ParseStatementBreak(int lineno) {
-    if (!semantic_checks.IsLegalBreakContinue()) {
+    if (!semantic_checks.IsLegalBreak()) {
         errorUnexpectedBreak(lineno);
         exit(0);
     }
 }
 
 void ParseUtils::ParseStatementContinue(int lineno) {
-    if (!semantic_checks.IsLegalBreakContinue()) {
+    if (!semantic_checks.IsLegalContinue()) {
         errorUnexpectedContinue(lineno);
         exit(0);
     }
@@ -226,7 +226,14 @@ STypePtr ParseUtils::ParseCall(int lineno, STypePtr id, STypePtr exp_list) {
     auto dynamic_cast_func = dynamic_pointer_cast<STypeFunctionSymbol>(symbol_from_id);
     auto dynamic_cast_exp_list = dynamic_pointer_cast<STypeExpList>(exp_list);
 
-    if (!semantic_checks.IsLegalCallTypes(dynamic_cast_func, dynamic_cast_exp_list)) {
+    auto reversed_exp_list = make_shared<STypeExpList>();
+    for (auto exp_iter = dynamic_cast_exp_list->exp_list.rbegin();
+         exp_iter != dynamic_cast_exp_list->exp_list.rend(); exp_iter++) {
+
+        reversed_exp_list->exp_list.push_back(*exp_iter);
+    }
+
+    if (!semantic_checks.IsLegalCallTypes(dynamic_cast_func, reversed_exp_list)) {
         vector<string> expected_args;
         for (auto symbol:dynamic_cast_func->parameters) {
             expected_args.push_back(TypeToString(symbol.general_type));
