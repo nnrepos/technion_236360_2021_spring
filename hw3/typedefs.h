@@ -31,12 +31,12 @@ extern char *textbuffptr;
 
 enum GeneralTypeEnum {
     VOID_TYPE,
-    INT_TYPE,
+    INT_TYPE,  // this might be a number or a variable
     BYTE_TYPE,
     BOOL_TYPE,
     STRING_TYPE,
     FUNCTION_TYPE,
-    VARIABLE_TYPE,
+    TYPE_TYPE,
     OTHER_TYPE
 
 };
@@ -44,21 +44,35 @@ enum GeneralTypeEnum {
 typedef GeneralTypeEnum Type;
 
 class STypeBase {
+    // must have at least one virtual method
 public:
-    explicit STypeBase(Type type);
+
+    explicit STypeBase(Type type);  // also used for expressions
 
     Type general_type;
 
     STypeBase();
 
+    virtual ~STypeBase() = default;
+
 };
 
 typedef shared_ptr<STypeBase> STypePtr;
+typedef vector<STypeBase> ExpList;
+
+class STypeExpList : public STypeBase {
+public:
+    ExpList exp_list;
+    STypeExpList();
+    explicit STypeExpList(ExpList &exp_list);
+};
+
+typedef shared_ptr<STypeExpList> STypeExpListPtr;
 
 class STypeCType : public STypeBase {
 public:
     Type type;
-    explicit STypeCType(Type& type);
+    explicit STypeCType(Type type);
 };
 
 typedef shared_ptr<STypeCType> STypeCTypePtr;
@@ -79,25 +93,25 @@ public:
 
 typedef shared_ptr<STypeNumber> STypeNumberPtr;
 
-class STypeSymbol : public STypeBase {
-    // must have at least one virtual class
+class STypeBool : public STypeBase {
 public:
-    string symbol_name;
-    Type symbol_ret_type;
+    bool token;
+    explicit STypeBool(string& token_string);
+};
+
+typedef shared_ptr<STypeBool> STypeBoolPtr;
+
+class STypeSymbol : public STypeBase {
+    // must have at least one virtual method
+public:
+    string name;
     int offset;
-    STypeSymbol(string& symbol_name, Type symbol_type, int offset);
+    STypeSymbol(string &name, int offset, Type type);
     virtual ~STypeSymbol() = default;
 };
 
 typedef shared_ptr<STypeSymbol> STypeSymbolPtr;
-
-class STypeVariableSymbol : public STypeSymbol {
-public:
-    STypeVariableSymbol(string& symbol_name, Type symbol_type, int offset);
-};
-
-typedef shared_ptr<STypeVariableSymbol> STypeVariableSymbolPtr;
-typedef vector<STypeVariableSymbol> ArgList;
+typedef vector<STypeSymbol> ArgList;
 
 class STypeArgList : public STypeBase {
 public:
@@ -112,6 +126,8 @@ typedef shared_ptr<STypeArgList> STypeArgListPtr;
 class STypeFunctionSymbol : public STypeSymbol {
 public:
     ArgList parameters;
+    Type ret_type;
+
     STypeFunctionSymbol(string& symbol_name, Type symbol_type, int offset, ArgList &arg_list);
 
 };

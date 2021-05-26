@@ -1,39 +1,55 @@
 #include "symbol_table.h"
 
 
-Scope::Scope(ScopeType type, int offset) : type(type), offset(offset), symbols() {
-
-}
-
 void SymbolTable::PushDefaultFunctions() {
-    // print print, then printi
+    // push print, then printi
 }
 
 void SymbolTable::PushScope(ScopeType scope_type) {
-    scope_stack.push(new Scope(scope_type, current_offset));
+    Type ret_type;
+    int while_switch_count;
 
+    if (scope_type == GLOBAL_SCOPE) {
+        ret_type = OTHER_TYPE;
+        while_switch_count = 0;
+    } else {
+        assert(!scope_stack.empty());
+        ret_type = scope_stack.top()->ret_type;
+        while_switch_count = scope_stack.top()->while_switch_count;
+    }
+
+    if (scope_type == WHILE_SCOPE || scope_type == SWITCH_SCOPE){
+        while_switch_count++;
+    }
+
+    scope_stack.push(new Scope(scope_type, current_offset, ret_type, while_switch_count));
+}
+
+void SymbolTable::PushFunctionScope(ScopeType scope_type, Type ret_type) {
+    assert(!scope_stack.empty());
+    int while_switch_count = scope_stack.top()->while_switch_count;
+    scope_stack.push(new Scope(scope_type, current_offset, ret_type, while_switch_count));
 }
 
 void SymbolTable::PopScope() {
     // in global scope - functions only; in non-global scope - variables only
-    if (scope_stack.top()->type == GLOBAL_SCOPE) {
-        for (auto func_symbol:scope_stack.top()->symbols) {
+    if (scope_stack.top()->scope_type == GLOBAL_SCOPE) {
+        for (const auto &func_symbol:scope_stack.top()->symbols) {
             assert(func_symbol->general_type == FUNCTION_TYPE);
             auto casted_func = dynamic_pointer_cast<STypeFunctionSymbol>(func_symbol);
             vector<string> string_types;
             ArgListToStrings(casted_func->parameters, string_types);
-            string ret_type = TypeToString(casted_func->symbol_ret_type);
-            printID(casted_func->symbol_name, 0, makeFunctionType(ret_type, string_types));
-
+            string ret_type = TypeToString(casted_func->ret_type);
+            printID(casted_func->name, 0, makeFunctionType(ret_type, string_types));
+            symbols_map.erase(casted_func->name);
         }
 
     } else {
-        for (const auto& var_symbol:scope_stack.top()->symbols) {
-            assert(var_symbol->general_type == VARIABLE_TYPE);
-            auto casted_var = dynamic_pointer_cast<STypeVariableSymbol>(var_symbol);
-            string type = TypeToString(casted_var->symbol_ret_type);
-            printID(casted_var->symbol_name,casted_var->offset, type);
-
+        for (const auto &basic_symbol:scope_stack.top()->symbols) {
+            assert(basic_symbol->general_type != FUNCTION_TYPE);
+            string type = TypeToString(basic_symbol->general_type);
+            printID(basic_symbol->name, basic_symbol->offset, type);
+            symbols_map.erase(basic_symbol->name);
         }
     }
 
@@ -47,4 +63,30 @@ SymbolTable::SymbolTable() : current_offset(0), symbols_map(), scope_stack() {
 
 }
 
+void SymbolTable::AddVariable(const STypeSymbolPtr &symbol) {
+    assert(!scope_stack.empty());
+    symbol->offset = (scope_stack.top()->offset)++;
+    scope_stack.top()->symbols.push_back(symbol);
+    symbols_map.emplace(symbol->name, symbol);
+}
 
+void SymbolTable::AddFunction(const STypeFunctionSymbolPtr &symbol) {
+    assert(!scope_stack.empty());
+    symbol->offset = 0;
+    scope_stack.top()->symbols.push_back(symbol);
+    symbols_map.emplace(symbol->name, symbol);
+}
+
+bool SymbolTable::IsSymbolDefined(string &symbol_name) {
+    return (symbols_map.find(symbol_name) != symbols_map.end());
+}
+
+STypeSymbolPtr SymbolTable::GetDefinedSymbol(string &symbol_name) {
+    return symbols_map[symbol_name];
+}
+
+
+Scope::Scope(ScopeType scope_type, int offset, Type ret_type, int while_switch_count)
+        : scope_type(scope_type), offset(offset), ret_type(ret_type) {
+
+}

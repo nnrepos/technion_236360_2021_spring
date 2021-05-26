@@ -12,7 +12,11 @@ STypeNumber::STypeNumber(string &token_string) : STypeBase(INT_TYPE) {
     token = stoi(token_string);
 }
 
-STypeCType::STypeCType(Type &type) : type(type) {
+STypeBool::STypeBool(string &token_string) : STypeBase(BOOL_TYPE) {
+    token = (token_string == "true");
+}
+
+STypeCType::STypeCType(Type type) : STypeBase(TYPE_TYPE), type(type) {
 
 }
 
@@ -37,22 +41,16 @@ string TypeToString(Type type) {
 
 void ArgListToStrings(ArgList &arg_list, vector<string> &string_vector) {
     string_vector.clear();
-    for (const auto &variable:arg_list) {
-        string_vector.push_back(TypeToString(variable.symbol_ret_type));
+    for (const auto &exp:arg_list) {
+        string_vector.push_back(TypeToString(exp.general_type));
     }
 }
 
-STypeSymbol::STypeSymbol(string &symbol_name, Type symbol_type, int offset) : symbol_name(symbol_name),
-                                                                              symbol_ret_type(symbol_type),
-                                                                              offset(offset) {
+STypeSymbol::STypeSymbol(string &name, int offset, Type type) : STypeBase(type), name(name),
+                                                                offset(offset) {
 
 }
 
-
-STypeVariableSymbol::STypeVariableSymbol(string &symbol_name, Type symbol_type, int offset)
-        : STypeSymbol(symbol_name, symbol_type, offset) {
-
-}
 
 STypeArgList::STypeArgList() : arg_list() {
 
@@ -63,6 +61,14 @@ STypeArgList::STypeArgList(ArgList &arg_list) : arg_list(arg_list) {
 }
 
 STypeFunctionSymbol::STypeFunctionSymbol(string &symbol_name, Type symbol_type, int offset, ArgList &arg_list)
-        : STypeSymbol(symbol_name, symbol_type, offset), parameters(arg_list) {
+        : STypeSymbol(symbol_name, offset, FUNCTION_TYPE), parameters(arg_list), ret_type(symbol_type) {
+
+}
+
+STypeExpList::STypeExpList(): exp_list() {
+
+}
+
+STypeExpList::STypeExpList(ExpList &exp_list): exp_list(exp_list) {
 
 }

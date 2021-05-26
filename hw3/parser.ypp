@@ -56,13 +56,13 @@
 %right ELSE
 %%
 
-Program: Funcs
+Program: Funcs PopScope
     {ParseUtils::instance().ParseProgram(yylineno);}
 Funcs: %empty
     {ParseUtils::instance().ParseFuncs(yylineno);}
 Funcs: FuncDecl Funcs
     {ParseUtils::instance().ParseFuncs(yylineno);}
-FuncDecl: FuncHead LBRACE Statements RBRACE
+FuncDecl: FuncHead LBRACE Statements RBRACE PopScope  // pushing scope inside FuncHead
     {ParseUtils::instance().ParseFuncDecl(yylineno, $1);}
 FuncHead: RetType ID LPAREN Formals RPAREN
     {$$ = ParseUtils::instance().ParseFuncHead(yylineno, $1, $2, $4);}
@@ -75,49 +75,49 @@ Formals: %empty
 Formals: FormalsList
     {$$ = ParseUtils::instance().ParseFormals(yylineno, $1);}
 FormalsList: FormalDecl
-    {$$ = ParseUtils::instance().ParseFormalsList(yylineno);}
-FormalsList: FormalDecl COMMA FormalsList
     {$$ = ParseUtils::instance().ParseFormalsList(yylineno, $1);}
+FormalsList: FormalDecl COMMA FormalsList
+    {$$ = ParseUtils::instance().ParseFormalsList(yylineno, $1, $3);}
 FormalDecl: Type ID
-    {$$ = ParseUtils::instance().ParseFormalDecl(yylineno);}
+    {$$ = ParseUtils::instance().ParseFormalDecl(yylineno, $1, $2);}
 Statements: Statement
-    {$$ = ParseUtils::instance().ParseStatements(yylineno);}
+    {ParseUtils::instance().ParseStatements(yylineno);}
 Statements: Statements Statement
-    {$$ = ParseUtils::instance().ParseStatements(yylineno, $1);}
-Statement: LBRACE Statements RBRACE
-    {$$ = ParseUtils::instance().ParseStatementOfStatements(yylineno);}
+    {ParseUtils::instance().ParseStatements(yylineno, $1);}
+Statement: PushStatementScope LBRACE Statements RBRACE PopScope
+    {ParseUtils::instance().ParseStatementOfStatements(yylineno);}
 Statement: Type ID SC
-    {$$ = ParseUtils::instance().ParseStatementType(yylineno);}
+    {ParseUtils::instance().ParseStatementType(yylineno, $1, $2);}
 Statement: Type ID ASSIGN Exp SC
-    {$$ = ParseUtils::instance().ParseStatementTypeAssign(yylineno);}
+    {ParseUtils::instance().ParseStatementTypeAssign(yylineno, $1, $2, $4);}
 Statement: ID ASSIGN Exp SC
-    {$$ = ParseUtils::instance().ParseStatementAssign(yylineno);}
+    {ParseUtils::instance().ParseStatementAssign(yylineno, $1, $3);}
 Statement: Call SC
-    {$$ = ParseUtils::instance().ParseStatementCall(yylineno);}
+    {ParseUtils::instance().ParseStatementCall(yylineno);}
 Statement: RETURN SC
-    {$$ = ParseUtils::instance().ParseStatementReturn(yylineno);}
+    {ParseUtils::instance().ParseStatementReturn(yylineno);}
 Statement: RETURN Exp SC
-    {$$ = ParseUtils::instance().ParseStatementReturnExp(yylineno);}
-Statement: IF LPAREN Exp RPAREN Statement
-    {$$ = ParseUtils::instance().ParseStatementIf(yylineno);}
-Statement: IF LPAREN Exp RPAREN Statement ELSE Statement
-    {$$ = ParseUtils::instance().ParseStatementIfElse(yylineno);}
-Statement: WHILE LPAREN Exp RPAREN Statement
-    {$$ = ParseUtils::instance().ParseStatementWhile(yylineno);}
+    {ParseUtils::instance().ParseStatementReturnExp(yylineno, $2);}
+Statement: IF LPAREN Exp RPAREN PushStatementScope Statement PopScope
+    {ParseUtils::instance().ParseStatementIf(yylineno, $3);}
+Statement: IF LPAREN Exp RPAREN PushStatementScope Statement PopScope ELSE PushStatementScope Statement PopScope
+    {ParseUtils::instance().ParseStatementIfElse(yylineno, $3);}
+Statement: WHILE LPAREN Exp RPAREN PushWhileScope Statement PopScope
+    {ParseUtils::instance().ParseStatementWhile(yylineno, $3);}
 Statement: BREAK SC
-    {$$ = ParseUtils::instance().ParseStatementBreak(yylineno);}
+    {ParseUtils::instance().ParseStatementBreak(yylineno);}
 Statement: CONTINUE SC
-    {$$ = ParseUtils::instance().ParseStatementContinue(yylineno);}
-Statement:  SWITCH LPAREN Exp RPAREN LBRACE CaseList RBRACE
-    {$$ = ParseUtils::instance().ParseStatementSwitch(yylineno);}
+    {ParseUtils::instance().ParseStatementContinue(yylineno);}
+Statement:  SWITCH LPAREN Exp RPAREN PushSwitchScope LBRACE CaseList RBRACE PopScope // TODO: push 2 scopes?
+    {ParseUtils::instance().ParseStatementSwitch(yylineno, $3);}
 Call: ID LPAREN ExpList RPAREN
-    {$$ = ParseUtils::instance().ParseCall(yylineno);}
+    {$$ = ParseUtils::instance().ParseCall(yylineno, $1, $3);}
 Call: ID LPAREN RPAREN
     {$$ = ParseUtils::instance().ParseCall(yylineno, $1);}
 ExpList: Exp
-    {$$ = ParseUtils::instance().ParseExplist(yylineno);}
-ExpList: Exp COMMA ExpList
     {$$ = ParseUtils::instance().ParseExplist(yylineno, $1);}
+ExpList: Exp COMMA ExpList
+    {$$ = ParseUtils::instance().ParseExplist(yylineno, $1, $3);}
 Type: INT
     {$$ = ParseUtils::instance().ParseInt(yylineno);}
 Type: BYTE
@@ -125,7 +125,7 @@ Type: BYTE
 Type: BOOL
     {$$ = ParseUtils::instance().ParseBool(yylineno);}
 Exp: LPAREN Exp RPAREN
-    {$$ = ParseUtils::instance().ParseParentheses(yylineno);}
+    {$$ = ParseUtils::instance().ParseParentheses(yylineno, $1);}
 Exp: Exp PLUS_MINUS Exp
     {$$ = ParseUtils::instance().ParseBinop(yylineno);}
 Exp: Exp MULT_DIV Exp
@@ -135,9 +135,9 @@ Exp: ID
 Exp: Call
     {$$ = ParseUtils::instance().ParseCallExp(yylineno);}
 Exp: NUM
-    {$$ = ParseUtils::instance().ParseNum(yylineno);}
+    {$$ = ParseUtils::instance().ParseNum(yylineno, $1);}
 Exp: NUM B
-    {$$ = ParseUtils::instance().ParseNumB(yylineno);}
+    {$$ = ParseUtils::instance().ParseNumB(yylineno, $1);}
 Exp: STRING
     {$$ = ParseUtils::instance().ParseString(yylineno);}
 Exp: TRUE
@@ -164,7 +164,14 @@ CaseList: DEFAULT COLON Statements
     {$$ = ParseUtils::instance().ParseCaseDefault(yylineno);}
 CaseDecl: CASE NUM COLON Statements
     {$$ = ParseUtils::instance().ParseCaseDecl(yylineno);}
-
+PushStatementScope: %empty
+    {ParseUtils::instance().ParsePushStatementScope(yylineno);}
+PushWhileScope: %empty
+    {ParseUtils::instance().ParsePushWhileScope(yylineno);}
+PushSwitchScope: %empty
+    {ParseUtils::instance().ParsePushSwitchScope(yylineno);}
+PopScope: %empty
+    {ParseUtils::instance().ParsePopScope(yylineno);}
 %%
 
 void yyerror(const char * message)
