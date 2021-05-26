@@ -36,7 +36,6 @@ enum GeneralTypeEnum {
     BOOL_TYPE,
     STRING_TYPE,
     FUNCTION_TYPE,
-    TYPE_TYPE, // TODO: remove this
     OTHER_TYPE
 
 };
@@ -71,7 +70,6 @@ typedef shared_ptr<STypeExpList> STypeExpListPtr;
 
 class STypeCType : public STypeBase {
 public:
-    Type type;
     explicit STypeCType(Type type);
 };
 

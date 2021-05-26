@@ -1,6 +1,5 @@
 #include "typedefs.h"
 
-#include <utility>
 
 STypeBase::STypeBase() : general_type(OTHER_TYPE) {}
 
@@ -15,7 +14,7 @@ STypeNumber::STypeNumber(string &token_string) : STypeBase(INT_TYPE) {
 STypeBool::STypeBool(bool token) : STypeBase(BOOL_TYPE), token(token) {
 }
 
-STypeCType::STypeCType(Type type) : STypeBase(TYPE_TYPE), type(type) {
+STypeCType::STypeCType(Type type) : STypeBase(type) {
 
 }
 

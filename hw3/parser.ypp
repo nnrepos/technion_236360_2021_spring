@@ -125,7 +125,7 @@ Type: BYTE
 Type: BOOL
     {$$ = ParseUtils::instance().ParseBool(yylineno);}
 Exp: LPAREN Exp RPAREN
-    {$$ = ParseUtils::instance().ParseParentheses(yylineno, $1);}
+    {$$ = ParseUtils::instance().ParseParentheses(yylineno, $2);}
 Exp: Exp PLUS_MINUS Exp
     {$$ = ParseUtils::instance().ParseBinop(yylineno, $1, $3);}
 Exp: Exp MULT_DIV Exp
