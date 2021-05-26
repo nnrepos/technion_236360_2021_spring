@@ -55,10 +55,7 @@ void SymbolTable::PushFunctionScope(ScopeType scope_type, Type ret_type, STypeFu
     bool inside_switch = scope_stack.top()->inside_switch;
     scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, inside_while, inside_switch));
 
-    for (auto param:function_symbol->parameters) {
-        auto param_symbol = make_shared<STypeSymbol>(param);
-        AddParam(param_symbol);
-    }
+
 }
 
 void SymbolTable::PopScope() {
