@@ -1,0 +1,18 @@
+bool f(byte x) {
+    byte i = 1b;
+	while (i < 255b) {
+	    if(2 * i == x) {
+	        return true;
+	    }
+	    else
+	        return false;
+	}
+}
+
+byte g() {
+    return 42 b;
+}
+
+void main() {
+    return f(g());
+}

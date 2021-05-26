@@ -1,0 +1,4 @@
+//wrong return 1
+void main() {
+    return 6;
+}

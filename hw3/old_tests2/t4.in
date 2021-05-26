@@ -1,0 +1,14 @@
+void main()
+{
+    print("do nothing");
+}
+
+int foo(bool x) {
+    while(true){
+        if(x)
+            break;
+        else
+            return 6;
+    }
+    break;
+}

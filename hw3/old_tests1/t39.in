@@ -1,0 +1,5 @@
+// undef func 2
+void main() {
+    int foo;
+    foo();
+}

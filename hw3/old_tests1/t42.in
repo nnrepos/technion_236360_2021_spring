@@ -1,0 +1,7 @@
+//test
+
+void main()
+{
+    int x = 4;
+    byte y = 100 b;
+}

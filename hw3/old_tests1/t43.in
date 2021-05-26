@@ -1,0 +1,13 @@
+//else far from while
+
+void main()
+{
+    int x = 4;
+    byte y = 100 b;
+	while(true)
+		int z = 2;
+	int a;
+	else {
+		int b;
+	}
+}

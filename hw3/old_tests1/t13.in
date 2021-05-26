@@ -1,0 +1,5 @@
+//fail printi params
+
+void main() {
+    printi(true);
+}

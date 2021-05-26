@@ -1,0 +1,12 @@
+//test
+
+void myFun(int e1, byte e2) {
+	if(true) print("cool");
+}
+
+void main()
+{
+    int x = 4;
+    byte y = 100 b;
+	myFun(x, y);
+}

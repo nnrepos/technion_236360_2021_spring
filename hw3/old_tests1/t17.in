@@ -1,0 +1,9 @@
+//inner function not in grammar
+
+void main() {
+    int foo() {
+        return 6;
+    }
+
+    foo();
+}

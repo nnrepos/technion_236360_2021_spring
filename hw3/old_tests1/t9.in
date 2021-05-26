@@ -1,0 +1,8 @@
+//fail param num
+void test(bool bin, byte ina){
+    return;
+}
+
+void main() {
+    test(true,2 b, false);
+}

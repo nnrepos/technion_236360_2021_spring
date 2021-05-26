@@ -1,0 +1,4 @@
+// main with wrong return val
+int main() {
+    return 0;
+}

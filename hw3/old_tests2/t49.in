@@ -1,0 +1,5 @@
+void main() {
+    bool in = true;
+    if(x)
+        print 3;
+}

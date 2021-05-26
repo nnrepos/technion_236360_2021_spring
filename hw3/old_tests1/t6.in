@@ -1,0 +1,19 @@
+//test conversions
+void main() {
+    int int1 = 8;
+    byte byte1 = 9 b;
+    bool bool1 = true;
+    bool bool2 = false;
+
+    int1 = 6b;
+    int1 = byte1;
+
+    bool1 = 6 < 7;
+    bool2 = 80 b >= 12;
+    bool1 = 12 b != 13 b;
+    bool2 = 1 == 2b;
+
+    bool bool3 = bool1 and bool2;
+    bool3 = bool1 or bool2;
+    bool3 = bool1 or not bool2;
+}

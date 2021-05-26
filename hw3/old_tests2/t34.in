@@ -1,0 +1,6 @@
+// b is a byte literal
+void main() {
+    int a;
+    int b;
+    int c;
+}

@@ -1,0 +1,30 @@
+int foo(int x, byte y)
+{
+    return x+x+x/y-y-y;
+}
+
+void bar(bool cond) {
+
+    if(true)
+        if(cond)
+            int s;
+        else
+            bool s;
+    {{{int x;}}}
+}
+
+void main() {
+    int x = 0;
+    bool w = 2 + 3 / 4 + foo(2+x,3b) <= 8;
+    while(w) {
+        x = x+1;
+        byte y = 255b;
+        if (x <= y or x == 0) {
+            bool z = not w;
+            w = z;
+        }
+    }
+    int z = x;
+    printi(z);
+    print("finished");
+}

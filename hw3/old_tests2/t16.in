@@ -1,0 +1,8 @@
+//use string as expr
+void callee() {
+    byte variable = "with a string";
+}
+
+void main() {
+    callee();
+}

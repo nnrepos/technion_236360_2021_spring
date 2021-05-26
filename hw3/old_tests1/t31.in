@@ -1,0 +1,4 @@
+//byte literal out of range
+void main() {
+    int i = 256b - 10;
+}

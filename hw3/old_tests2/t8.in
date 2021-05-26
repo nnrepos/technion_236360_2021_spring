@@ -1,0 +1,67 @@
+void testIn1(bool bin, byte ina){
+    return;
+}
+
+void testIn2(bool bin, int ina){
+    return;
+}
+
+byte returnByte() {
+    return 254 b;
+}
+
+int returnInt() {
+    return 1;
+}
+
+int returnInt2() {
+    return 2b;
+}
+
+bool returnBool() {
+    return false;
+}
+
+void main() {
+    //test parameter+conversions
+    bool bb = true;
+    testIn1(true, 8b);
+    byte b1 = 6b;
+    byte b2 = 255b;
+    testIn1(false, b1+b2);
+    testIn1(true and false, b1-b2);
+    testIn1(false and true, b1*b2);
+    testIn1(true or false, b1/b2);
+    int i1 = 256;
+    int i2 = 300;
+    testIn2(bb,0);
+    testIn2(not bb, b1);
+    testIn2(not not bb, i1);
+    testIn2(true or bb, b2+i1);
+    testIn2(bb or false, b2-i1);
+    testIn2(i1 < i2, b2*i1);
+    testIn2(b1 > b2, b2/i1);
+    testIn2(i1 != b2, i1+i2);
+    testIn2(b1 == i2, i1-i2);
+    testIn2(b1 <= i2 and b1 >= b2 or not bb, i1*i2);
+    testIn2(returnBool(), i1/i2);
+    //test return type+conversions
+    byte b3 = returnByte();
+    int i3 = returnInt();
+    bool bb2 = returnBool();
+    i3 = returnByte();
+    testIn1(true,returnByte());
+    testIn1(true,returnByte() + returnByte());
+    testIn1(true,returnByte() + 6b);
+    testIn2(true,returnInt());
+    testIn2(true,returnByte());
+    testIn2(true,returnByte() * returnInt());
+    testIn2(true,returnByte() + 6);
+    testIn2(not returnBool(), 0);
+    //test printi and print
+    printi(i3);
+    printi(returnInt());
+    printi(b1);
+    printi(returnByte());
+    print("abc\n");
+}

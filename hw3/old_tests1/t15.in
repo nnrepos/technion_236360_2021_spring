@@ -1,0 +1,9 @@
+//testing if+else structure and comments
+void main() {
+    int x = 3;
+    if(x > 4)
+        print("What?");
+    else{
+        printi(x);
+    }
+}

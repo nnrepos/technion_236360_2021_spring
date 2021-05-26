@@ -1,0 +1,7 @@
+void main() {
+    callee();
+}
+
+void callee() {
+    print("not ok");
+}

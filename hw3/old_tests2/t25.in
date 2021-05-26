@@ -1,0 +1,5 @@
+void main() {
+    int x;
+    if (true)
+        bool x;
+}

@@ -1,0 +1,13 @@
+//wrong return 2
+int foo(bool x) {
+    if (x) {
+        bool y;
+        return 0;
+    }
+    else
+        return;
+}
+
+void main() {
+    foo(false);
+}

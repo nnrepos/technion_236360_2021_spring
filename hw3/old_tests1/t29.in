@@ -1,0 +1,12 @@
+// already defined as function
+void c(byte foo) {
+    print("c");
+}
+
+void foo(bool c) {
+    return;
+}
+
+void main() {
+    return;
+}

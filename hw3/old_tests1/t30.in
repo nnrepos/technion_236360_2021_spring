@@ -1,0 +1,4 @@
+// undefined
+void main() {
+    int x = p;
+}

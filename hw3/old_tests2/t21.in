@@ -1,0 +1,49 @@
+//ifs
+bool cond() {
+    return true;
+}
+
+void f1() {
+    if (cond()) {
+        int x;
+        print("ok");
+    }
+}
+void f2(bool x) {
+    if (x)
+        print("ok");
+    else
+        int y;
+}
+
+void f3() {
+    bool c = false;
+    bool d = true;
+    if (c)
+        if (not c)
+            int x;
+        else
+            print("impossible!");
+    else {
+        if (c or d)
+            print("ok");
+        else
+            bool x;
+    }
+}
+
+void ferr() {
+    if(3 != 2){
+        int y = 3;
+    }
+    else
+}
+
+void main()
+{
+    f1();
+    f2();
+    f3();
+    ferr();
+    return;
+}

@@ -1,0 +1,8 @@
+// undef func 1
+void main() {
+    callee();
+}
+
+void callee() {
+    print("not ok");
+}
