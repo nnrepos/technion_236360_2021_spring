@@ -99,17 +99,17 @@ Statement: RETURN SC
 Statement: RETURN Exp SC
     {ParseUtils::instance().ParseStatementReturnExp(yylineno, $2);}
 Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope Statement PopScope
-    {ParseUtils::instance().ParseStatementIf(yylineno, $3);}
+    {ParseUtils::instance().ParseStatementIf(yylineno);}
 Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope Statement PopScope ELSE PushStatementScope Statement PopScope
-    {ParseUtils::instance().ParseStatementIfElse(yylineno, $3);}
+    {ParseUtils::instance().ParseStatementIfElse(yylineno);}
 Statement: WHILE LPAREN Exp CheckBool RPAREN PushWhileScope Statement PopScope
-    {ParseUtils::instance().ParseStatementWhile(yylineno, $3);}
+    {ParseUtils::instance().ParseStatementWhile(yylineno);}
 Statement: BREAK SC
     {ParseUtils::instance().ParseStatementBreak(yylineno);}
 Statement: CONTINUE SC
     {ParseUtils::instance().ParseStatementContinue(yylineno);}
-Statement:  SWITCH LPAREN Exp CheckSwitchExp RPAREN CheckSwitchExp PushSwitchScope LBRACE CaseList RBRACE PopScope
-    {ParseUtils::instance().ParseStatementSwitch(yylineno, $3);}
+Statement:  SWITCH LPAREN Exp CheckSwitchExp RPAREN PushSwitchScope LBRACE CaseList RBRACE PopScope
+    {ParseUtils::instance().ParseStatementSwitch(yylineno);}
 Call: ID LPAREN ExpList RPAREN
     {$$ = ParseUtils::instance().ParseCall(yylineno, $1, $3);}
 Call: ID LPAREN RPAREN

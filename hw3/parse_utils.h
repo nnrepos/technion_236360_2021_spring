@@ -56,17 +56,17 @@ public:
 
     void ParseStatementReturnExp(int lineno, STypePtr exp);
 
-    void ParseStatementIf(int lineno, STypePtr exp);
+    void ParseStatementIf(int lineno);
 
-    void ParseStatementIfElse(int lineno, STypePtr exp);
+    void ParseStatementIfElse(int lineno);
 
-    void ParseStatementWhile(int lineno, STypePtr exp);
+    void ParseStatementWhile(int lineno);
 
     void ParseStatementBreak(int lineno);
 
     void ParseStatementContinue(int lineno);
 
-    void ParseStatementSwitch(int lineno, STypePtr exp);
+    void ParseStatementSwitch(int lineno);
 
     STypePtr ParseCall(int lineno, STypePtr id, STypePtr exp_list);
 

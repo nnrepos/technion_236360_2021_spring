@@ -192,19 +192,19 @@ void ParseUtils::ParseStatementReturnExp(int lineno, STypePtr exp) {
     }
 }
 
-void ParseUtils::ParseStatementIf(int lineno, STypePtr exp) {
+void ParseUtils::ParseStatementIf(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementIfElse(int lineno, STypePtr exp) {
+void ParseUtils::ParseStatementIfElse(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementWhile(int lineno, STypePtr exp) {
+void ParseUtils::ParseStatementWhile(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementSwitch(int lineno, STypePtr exp) {
+void ParseUtils::ParseStatementSwitch(int lineno) {
 
 }
 
