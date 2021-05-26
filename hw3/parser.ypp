@@ -83,7 +83,7 @@ FormalDecl: Type ID
 Statements: Statement
     {ParseUtils::instance().ParseStatements(yylineno);}
 Statements: Statements Statement
-    {ParseUtils::instance().ParseStatements(yylineno, $1);}
+    {ParseUtils::instance().ParseStatements(yylineno);}
 Statement: PushStatementScope LBRACE Statements RBRACE PopScope
     {ParseUtils::instance().ParseStatementOfStatements(yylineno);}
 Statement: Type ID SC

@@ -40,13 +40,13 @@ void SymbolTable::PushScope(ScopeType scope_type) {
         while_switch_count++;
     }
 
-    scope_stack.push(new Scope(scope_type, current_offset, ret_type, while_switch_count));
+    scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, while_switch_count));
 }
 
 void SymbolTable::PushFunctionScope(ScopeType scope_type, Type ret_type, STypeFunctionSymbolPtr function_symbol) {
     assert(!scope_stack.empty());
     int while_switch_count = scope_stack.top()->while_switch_count;
-    scope_stack.push(new Scope(scope_type, current_offset, ret_type, while_switch_count));
+    scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, while_switch_count));
 
     for (auto param:function_symbol->parameters){
         auto param_symbol = make_shared<STypeSymbol>(param);

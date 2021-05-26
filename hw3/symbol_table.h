@@ -29,7 +29,7 @@ class SymbolTable {
 public:
     int current_offset;
     unordered_map<string, STypeSymbolPtr> symbols_map;
-    stack<Scope *> scope_stack;
+    stack<ScopePtr> scope_stack;
 
     void PushDefaultFunctions();
 

@@ -100,10 +100,6 @@ void ParseUtils::ParseStatements(int lineno) {
 
 }
 
-void ParseUtils::ParseStatements(int lineno, STypePtr x) {
-
-}
-
 void ParseUtils::ParseStatementOfStatements(int lineno) {
 
 }
@@ -259,7 +255,7 @@ STypePtr ParseUtils::ParseCall(int lineno, STypePtr id) {
     }
 
     auto dynamic_cast_func = dynamic_pointer_cast<STypeFunctionSymbol>(symbol_from_id);
-    auto empty_exp_list = STypeExpListPtr();
+    auto empty_exp_list = make_shared<STypeExpList>();
 
     if (!semantic_checks.IsLegalCallTypes(dynamic_cast_func, empty_exp_list)) {
         vector<string> expected_args;

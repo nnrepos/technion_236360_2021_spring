@@ -42,8 +42,6 @@ public:
 
     void ParseStatements(int lineno);
 
-    void ParseStatements(int lineno, STypePtr x);
-
     void ParseStatementOfStatements(int lineno);
 
     void ParseStatementType(int lineno, STypePtr type, STypePtr id);

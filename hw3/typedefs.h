@@ -135,4 +135,7 @@ typedef shared_ptr<STypeFunctionSymbol> STypeFunctionSymbolPtr;
 extern string TypeToString(Type type);
 extern void ArgListToStrings(ArgList &arg_list, vector<string> &string_vector);
 
+class Scope;
+typedef shared_ptr<Scope> ScopePtr;
+
 #endif //HWw3_TYPEDEFS_H
