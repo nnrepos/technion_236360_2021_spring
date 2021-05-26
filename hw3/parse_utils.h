@@ -124,6 +124,9 @@ public:
 
     void ParsePopScope(int lineno);
 
+    void ParseCheckSwitchExp(int lineno, STypePtr num_exp);
+
+    void ParseCheckBool(int lineno, STypePtr bool_exp);
 
     static ParseUtils &instance();
 };
