@@ -67,8 +67,8 @@ plusMinus       (\+|-)
 "0"							return LexToken(NUM, yytext);
 {nonzerodigit}{digit}* 		return LexToken(NUM, yytext);
 <INITIAL>{strsign}			textbuffptr = textbuff; BEGIN(STR);
-<STR>{lf}					errorLex(yylineno);
-<STR>{cr}					errorLex(yylineno);
+<STR>{lf}					errorLexAndExit(yylineno);
+<STR>{cr}					errorLexAndExit(yylineno);
 <STR>{bs}					BEGIN(STRES)  ;
 <STR>{strsign}				*textbuffptr = '\0';	BEGIN(INITIAL);	return LexToken(STRING, string(textbuff));
 <STR>.						*textbuffptr = *yytext;	textbuffptr++;
@@ -81,55 +81,16 @@ plusMinus       (\+|-)
 <STRES>"x"					BEGIN(STRESX);
 <STRES>.					textbuffptr = textbuff;	*textbuffptr++ = *yytext; BEGIN(STRESE);
 <STRESX>[0-7]{hexdigit}     *textbuffptr = HexaToChar(yytext[0], yytext[1]);	textbuffptr++;	BEGIN(STR);
-<STRESX>{strsign}			errorLex(yylineno);
-<STRESX>({lf}|{cr})			errorLex(yylineno);
-<STRESX>.{strsign}			errorLex(yylineno);
-<STRESX>.({lf}|{cr})		errorLex(yylineno);
+<STRESX>{strsign}			errorLexAndExit(yylineno);
+<STRESX>({lf}|{cr})			errorLexAndExit(yylineno);
+<STRESX>.{strsign}			errorLexAndExit(yylineno);
+<STRESX>.({lf}|{cr})		errorLexAndExit(yylineno);
 <STRESX>..					textbuffptr = textbuff; *textbuffptr++ = 'x';*textbuffptr++ = yytext[0]; *textbuffptr++ = yytext[1]; BEGIN(STRESE);
-<STRESE>{strsign}			errorLex(yylineno);
-<STRESE>({lf}|{cr})			errorLex(yylineno);
+<STRESE>{strsign}			errorLexAndExit(yylineno);
+<STRESE>({lf}|{cr})			errorLexAndExit(yylineno);
 <STRESE>.					;
-<STR,STRES,STRESX><<EOF>>	errorLex(yylineno);
+<STR,STRES,STRESX><<EOF>>	errorLexAndExit(yylineno);
 {whitespace}				;
-.							errorLex(yylineno);
+.							errorLexAndExit(yylineno);
 
 %%
-
-char HexaToChar(const char f,const char s){
-	int sum = 0;
-
-	switch(f){
-	        case 'a': sum += 10; break;
-            case 'b': sum += 11; break;
-            case 'c': sum += 12; break;
-            case 'd': sum += 13; break;
-            case 'e': sum += 14; break;
-            case 'f': sum += 15; break;
-			case 'A': sum += 10; break;
-			case 'B': sum += 11; break;
-			case 'C': sum += 12; break;
-			case 'D': sum += 13; break;
-			case 'E': sum += 14; break;
-			case 'F': sum += 15; break;
-			default: sum += (f - '0');
-	}
-
-	sum *= 16;
-
-	switch(s){
-	        case 'a': sum += 10; break;
-            case 'b': sum += 11; break;
-            case 'c': sum += 12; break;
-            case 'd': sum += 13; break;
-            case 'e': sum += 14; break;
-            case 'f': sum += 15; break;
-			case 'A': sum += 10; break;
-			case 'B': sum += 11; break;
-			case 'C': sum += 12; break;
-			case 'D': sum += 13; break;
-			case 'E': sum += 14; break;
-			case 'F': sum += 15; break;
-			default: sum += (s - '0');
-	}
-	return char(sum);
-}
