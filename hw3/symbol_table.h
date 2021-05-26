@@ -35,11 +35,13 @@ public:
 
     void PushScope(ScopeType scope_type);
 
-    void PushFunctionScope(ScopeType scope_type, Type ret_type);
+    void PushFunctionScope(ScopeType scope_type, Type ret_type, STypeFunctionSymbolPtr function_symbol);
 
     void PopScope();
 
     SymbolTable();
+
+    void AddParam(const STypeSymbolPtr& symbol);
 
     void AddVariable(const STypeSymbolPtr& symbol);
 

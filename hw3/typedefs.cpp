@@ -59,15 +59,15 @@ STypeArgList::STypeArgList(ArgList &arg_list) : arg_list(arg_list) {
 
 }
 
-STypeFunctionSymbol::STypeFunctionSymbol(string &symbol_name, Type symbol_type, int offset, ArgList &arg_list)
-        : STypeSymbol(symbol_name, offset, FUNCTION_TYPE), parameters(arg_list), ret_type(symbol_type) {
+STypeFunctionSymbol::STypeFunctionSymbol(string &symbol_name, Type symbol_type, ArgList &arg_list)
+        : STypeSymbol(symbol_name, 0, FUNCTION_TYPE), parameters(arg_list), ret_type(symbol_type) {
 
 }
 
-STypeExpList::STypeExpList(): exp_list() {
+STypeExpList::STypeExpList() : exp_list() {
 
 }
 
-STypeExpList::STypeExpList(ExpList &exp_list): exp_list(exp_list) {
+STypeExpList::STypeExpList(ExpList &exp_list) : exp_list(exp_list) {
 
 }

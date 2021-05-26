@@ -128,7 +128,7 @@ public:
     ArgList parameters;
     Type ret_type;
 
-    STypeFunctionSymbol(string& symbol_name, Type symbol_type, int offset, ArgList &arg_list);
+    STypeFunctionSymbol(string &symbol_name, Type symbol_type, ArgList &arg_list);
 
 };
 

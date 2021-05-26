@@ -17,6 +17,8 @@ void ParseUtils::ParseProgram(int lineno) {
         errorMainMissing();
         exit(0);
     }
+
+    symbol_table.PopScope();
 }
 
 void ParseUtils::ParseFuncs(int lineno) {
@@ -33,15 +35,14 @@ STypePtr ParseUtils::ParseFuncHead(int lineno, STypePtr ret_type, STypePtr id, S
         exit(0);
     }
 
-    symbol_table.PushFunctionScope(FUNCTION_SCOPE, ret_type->general_type);
-    auto function_symbol = make_shared<STypeFunctionSymbol>(dynamic_cast_id->token, dynamic_cast_ret_type->type, 0,
+    auto function_symbol = make_shared<STypeFunctionSymbol>(dynamic_cast_id->token, dynamic_cast_ret_type->type,
                                                             dynamic_cast_formals->arg_list);
+    symbol_table.AddFunction(function_symbol);
+    symbol_table.PushFunctionScope(FUNCTION_SCOPE, dynamic_cast_ret_type->type, function_symbol);
     return function_symbol;
 }
 
-void ParseUtils::ParseFuncDecl(int lineno, STypePtr function_head) {
-    auto dynamic_cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(function_head);
-    symbol_table.AddFunction(dynamic_cast_function);
+void ParseUtils::ParseFuncDecl(int lineno) {
 }
 
 STypePtr ParseUtils::ParseRetType(int lineno, STypePtr type) {
@@ -308,9 +309,16 @@ STypePtr ParseUtils::ParseBinop(int lineno, STypePtr exp1, STypePtr exp2) {
     return exp1;
 }
 
-STypeStringPtr ParseUtils::ParseID(int lineno, STypePtr id) {
-    auto string_pointer = dynamic_pointer_cast<STypeString>(id);
-    return string_pointer;
+STypePtr ParseUtils::ParseID(int lineno, STypePtr id) {
+    auto dynamic_cast_string = dynamic_pointer_cast<STypeString>(id);
+
+    if (!symbol_table.IsSymbolDefined(dynamic_cast_string->token)){
+        errorUndef(lineno,dynamic_cast_string->token);
+        exit(0);
+    }
+
+    auto id_pointer = symbol_table.GetDefinedSymbol(dynamic_cast_string->token);
+    return id_pointer;
 }
 
 STypePtr ParseUtils::ParseCallExp(int lineno, STypePtr call_exp) {
@@ -334,8 +342,10 @@ STypePtr ParseUtils::ParseNumB(int lineno, STypePtr num) {
     return num;
 }
 
-STypePtr ParseUtils::ParseString(int lineno, STypePtr strrrrrraaa) {
-    return STypePtr();
+STypeStringPtr ParseUtils::ParseString(int lineno, STypePtr stype_string) {
+    auto dynamic_cast_string = dynamic_pointer_cast<STypeString>(stype_string);
+
+    return dynamic_cast_string;
 }
 
 STypeBoolPtr ParseUtils::ParseTrue(int lineno) {
@@ -348,52 +358,42 @@ STypeBoolPtr ParseUtils::ParseFalse(int lineno) {
     return bool_pointer;
 }
 
-STypeBoolPtr ParseUtils::ParseNot(int lineno, STypePtr bool_exp) {
-    auto dynamic_cast_bool_exp = dynamic_pointer_cast<STypeBool>(bool_exp);
-
-    if (!semantic_checks.IsBoolType(dynamic_cast_bool_exp->general_type)){
+STypePtr ParseUtils::ParseNot(int lineno, STypePtr bool_exp) {
+    // exp can be a bool literal or an id
+    if (!semantic_checks.IsBoolType(bool_exp->general_type)){
         errorMismatch(lineno);
         exit(0);
     }
 
-    dynamic_cast_bool_exp->token = !dynamic_cast_bool_exp->token;
-    return dynamic_cast_bool_exp;
+    return bool_exp;
 }
 
-STypeBoolPtr ParseUtils::ParseAnd(int lineno, STypePtr bool_exp1, STypePtr bool_exp2) {
-    auto dynamic_cast_bool_exp1 = dynamic_pointer_cast<STypeBool>(bool_exp1);
-    auto dynamic_cast_bool_exp2 = dynamic_pointer_cast<STypeBool>(bool_exp2);
-
-    if (!semantic_checks.IsBoolType(dynamic_cast_bool_exp1->general_type)){
+STypePtr ParseUtils::ParseAnd(int lineno, STypePtr bool_exp1, STypePtr bool_exp2) {
+    if (!semantic_checks.IsBoolType(bool_exp1->general_type)){
         errorMismatch(lineno);
         exit(0);
     }
 
-    if (!semantic_checks.IsBoolType(dynamic_cast_bool_exp2->general_type)){
+    if (!semantic_checks.IsBoolType(bool_exp2->general_type)){
         errorMismatch(lineno);
         exit(0);
     }
 
-    dynamic_cast_bool_exp1->token = (dynamic_cast_bool_exp1->token && dynamic_cast_bool_exp2->token);
-    return dynamic_cast_bool_exp1;
+    return bool_exp1;
 }
 
-STypeBoolPtr ParseUtils::ParseOr(int lineno, STypePtr bool_exp1, STypePtr bool_exp2) {
-    auto dynamic_cast_bool_exp1 = dynamic_pointer_cast<STypeBool>(bool_exp1);
-    auto dynamic_cast_bool_exp2 = dynamic_pointer_cast<STypeBool>(bool_exp2);
-
-    if (!semantic_checks.IsBoolType(dynamic_cast_bool_exp1->general_type)){
+STypePtr ParseUtils::ParseOr(int lineno, STypePtr bool_exp1, STypePtr bool_exp2) {
+    if (!semantic_checks.IsBoolType(bool_exp1->general_type)){
         errorMismatch(lineno);
         exit(0);
     }
 
-    if (!semantic_checks.IsBoolType(dynamic_cast_bool_exp2->general_type)){
+    if (!semantic_checks.IsBoolType(bool_exp2->general_type)){
         errorMismatch(lineno);
         exit(0);
     }
 
-    dynamic_cast_bool_exp1->token = (dynamic_cast_bool_exp1->token || dynamic_cast_bool_exp2->token);
-    return dynamic_cast_bool_exp1;
+    return bool_exp1;
 }
 
 STypeBoolPtr ParseUtils::ParseRelOp(int lineno, STypePtr exp1, STypePtr exp2) {

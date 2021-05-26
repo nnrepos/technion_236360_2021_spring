@@ -40,7 +40,7 @@ bool SemanticChecks::IsLegalCallTypes(STypeFunctionSymbolPtr &func, STypeExpList
         return false;
     }
 
-    for (int i=0; i<func->parameters.size(); ++i){
+    for (size_t i=0; i<func->parameters.size(); ++i){
         if (!IsLegalAssignTypes(func->parameters[i].general_type, exp_list->exp_list[i].general_type)){
             return false;
         }

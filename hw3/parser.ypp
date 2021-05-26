@@ -56,14 +56,14 @@
 %right ELSE
 %%
 
-Program: Funcs PopScope
+Program: Funcs
     {ParseUtils::instance().ParseProgram(yylineno);}
 Funcs: %empty
     {ParseUtils::instance().ParseFuncs(yylineno);}
 Funcs: FuncDecl Funcs
     {ParseUtils::instance().ParseFuncs(yylineno);}
-FuncDecl: FuncHead LBRACE Statements RBRACE PopScope  // pushing scope inside FuncHead
-    {ParseUtils::instance().ParseFuncDecl(yylineno, $1);}
+FuncDecl: FuncHead LBRACE Statements  RBRACE PopScope  // pushing scope inside FuncHead too
+    {ParseUtils::instance().ParseFuncDecl(yylineno);}
 FuncHead: RetType ID LPAREN Formals RPAREN
     {$$ = ParseUtils::instance().ParseFuncHead(yylineno, $1, $2, $4);}
 RetType: Type
@@ -108,7 +108,7 @@ Statement: BREAK SC
     {ParseUtils::instance().ParseStatementBreak(yylineno);}
 Statement: CONTINUE SC
     {ParseUtils::instance().ParseStatementContinue(yylineno);}
-Statement:  SWITCH LPAREN Exp RPAREN PushSwitchScope LBRACE CaseList RBRACE PopScope // TODO: push 2 scopes?
+Statement:  SWITCH LPAREN Exp RPAREN PushSwitchScope LBRACE CaseList RBRACE PopScope
     {ParseUtils::instance().ParseStatementSwitch(yylineno, $3);}
 Call: ID LPAREN ExpList RPAREN
     {$$ = ParseUtils::instance().ParseCall(yylineno, $1, $3);}

@@ -70,7 +70,7 @@ plusMinus       (\+|-)
 <STR>{lf}					errorLex(yylineno);
 <STR>{cr}					errorLex(yylineno);
 <STR>{bs}					BEGIN(STRES)  ;
-<STR>{strsign}				*textbuffptr = '\0';	BEGIN(INITIAL);	return LexToken(STRING, textbuff);
+<STR>{strsign}				*textbuffptr = '\0';	BEGIN(INITIAL);	return LexToken(STRING, string(textbuff));
 <STR>.						*textbuffptr = *yytext;	textbuffptr++;
 <STRES>{strsign}			*textbuffptr = '\"';	textbuffptr++;	BEGIN(STR);
 <STRES>"n"					*textbuffptr = '\n';	textbuffptr++;	BEGIN(STR);

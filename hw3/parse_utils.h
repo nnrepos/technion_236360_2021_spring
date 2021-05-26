@@ -22,7 +22,7 @@ public:
 
     void ParseFuncs(int lineno);
 
-    void ParseFuncDecl(int lineno, STypePtr function_head);
+    void ParseFuncDecl(int lineno);
 
     STypePtr ParseFuncHead(int lineno, STypePtr ret_type, STypePtr id, STypePtr formals);
 
@@ -88,7 +88,7 @@ public:
 
     STypePtr ParseBinop(int lineno, STypePtr exp1, STypePtr exp2);
 
-    STypeStringPtr ParseID(int lineno, STypePtr id);
+    STypePtr ParseID(int lineno, STypePtr id);
 
     STypePtr ParseCallExp(int lineno, STypePtr call_exp);
 
@@ -96,17 +96,17 @@ public:
 
     STypePtr ParseNumB(int lineno, STypePtr num);
 
-    STypePtr ParseString(int lineno, STypePtr strrrrrraaa);
+    STypeStringPtr ParseString(int lineno, STypePtr stype_string);
 
     STypeBoolPtr ParseTrue(int lineno);
 
     STypeBoolPtr ParseFalse(int lineno);
 
-    STypeBoolPtr ParseNot(int lineno, STypePtr bool_exp);
+    STypePtr ParseNot(int lineno, STypePtr bool_exp);
 
-    STypeBoolPtr ParseAnd(int lineno, STypePtr bool_exp1, STypePtr bool_exp2);
+    STypePtr ParseAnd(int lineno, STypePtr bool_exp1, STypePtr bool_exp2);
 
-    STypeBoolPtr ParseOr(int lineno, STypePtr bool_exp1, STypePtr bool_exp2);
+    STypePtr ParseOr(int lineno, STypePtr bool_exp1, STypePtr bool_exp2);
 
     STypeBoolPtr ParseRelOp(int lineno, STypePtr exp1, STypePtr exp2);
 
