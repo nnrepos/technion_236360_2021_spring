@@ -57,7 +57,7 @@
 %%
 
 Program: Funcs
-    {ParseUtils::instance().ParseProgram(yylineno);}
+    {}
 Funcs:  %empty
     {ParseUtils::instance().ParseFuncs(yylineno);}
 Funcs: FuncDecl Funcs
