@@ -13,15 +13,16 @@ public:
     bool IsLegalCallTypes(STypeFunctionSymbolPtr &func, STypeExpListPtr &exp_list);
     bool IsLegalReturnType(Type type);
     bool IsBoolType(Type type);
+    bool IsVoidType(Type type);
     bool IsFunctionType(Type type);
     bool IsLegalBreak();
     bool IsLegalContinue();
     bool IsByteOverflow(int &num);
     bool IsLegalRelopTypes(Type first, Type second);
     bool IsLegalCast(Type first, Type second);
+
+
     Type CheckAndGetBinOpType(Type first, Type second);
-
-
 };
 
 

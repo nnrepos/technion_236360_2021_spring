@@ -58,6 +58,10 @@ bool SemanticChecks::IsBoolType(Type type) {
     return (type == BOOL_TYPE);
 }
 
+bool SemanticChecks::IsVoidType(Type type) {
+    return (type == VOID_TYPE);
+}
+
 bool SemanticChecks::IsFunctionType(Type type) {
     return (type == FUNCTION_TYPE);
 }

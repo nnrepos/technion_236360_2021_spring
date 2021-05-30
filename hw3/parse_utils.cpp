@@ -195,7 +195,7 @@ void ParseUtils::ParseStatementReturnExp(int lineno, STypePtr exp) {
         exit(0);
     }
 
-    if (!semantic_checks.IsLegalReturnType(exp->general_type)) {
+    if ((!semantic_checks.IsLegalReturnType(exp->general_type)) || (semantic_checks.IsVoidType(exp->general_type))) {
         errorMismatch(lineno);
         exit(0);
     }
