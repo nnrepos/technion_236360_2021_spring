@@ -28,7 +28,7 @@ void SymbolTable::PushScope(ScopeType scope_type) {
     bool inside_while, inside_switch;
 
     if (scope_type == GLOBAL_SCOPE) {
-        ret_type = OTHER_TYPE;
+        ret_type = ERROR_TYPE;
         inside_while = false;
         inside_switch = false;
     } else {

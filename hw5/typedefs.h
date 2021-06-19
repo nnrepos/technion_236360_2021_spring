@@ -8,6 +8,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cassert>
+
 #define YYSTYPE STypePtr
 
 using std::cout;
@@ -19,6 +20,8 @@ using std::pair;
 using std::vector;
 using std::unordered_map;
 using std::dynamic_pointer_cast;
+using std::to_string;
+using std::move;
 
 extern int yylineno;
 extern char *yytext;
@@ -36,12 +39,14 @@ enum GeneralTypeEnum {
     BOOL_TYPE,
     STRING_TYPE,
     FUNCTION_TYPE,
-    OTHER_TYPE
+    ERROR_TYPE
 
 };
 
 typedef GeneralTypeEnum Type;
+typedef string register_name;
 
+// stands for... symbol? segfault? something? i dunno
 class STypeBase {
     // must have at least one virtual method
 public:
@@ -57,7 +62,7 @@ public:
 };
 
 typedef shared_ptr<STypeBase> STypePtr;
-typedef vector<STypeBase> ExpList;
+typedef vector<STypePtr> ExpList;
 
 class STypeExpList : public STypeBase {
 public:
@@ -83,6 +88,14 @@ public:
 
 typedef shared_ptr<STypeString> STypeStringPtr;
 
+class STypeRegister : public STypeBase {
+public:
+    register_name reg_name;
+    STypeRegister(register_name  reg_name, Type type);
+};
+
+typedef shared_ptr<STypeRegister> STypeRegisterPtr;
+
 class STypeNumber : public STypeBase {
 public:
     int token;
@@ -100,12 +113,11 @@ public:
 typedef shared_ptr<STypeBool> STypeBoolPtr;
 
 class STypeSymbol : public STypeBase {
-    // must have at least one virtual method
+    // no virtual method needed
 public:
     string name;
     int offset;
     STypeSymbol(string &name, int offset, Type type);
-    virtual ~STypeSymbol() = default;
 };
 
 typedef shared_ptr<STypeSymbol> STypeSymbolPtr;

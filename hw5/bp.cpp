@@ -4,7 +4,7 @@
 #include <sstream>
 using namespace std;
 
-bool replace(string& str, const string& from, const string& to, const BranchLabelIndex index);
+bool replace(string& str, const string& from, const string& to, BranchLabelIndex index);
 
 CodeBuffer::CodeBuffer() : buffer(), globalDefs() {}
 
@@ -13,33 +13,35 @@ CodeBuffer &CodeBuffer::instance() {
 	return inst;
 }
 
-string CodeBuffer::genLabel(){
-	std::stringstream label;
-	label << "label_";
-	label << buffer.size();
-	std::string ret(label.str());
-	label << ":";
-	emit(label.str());
-	return ret;
+std::string CodeBuffer::genLabel(const string& extension) {
+    std::stringstream label;
+    label << "label";
+    label << buffer.size();
+    label << extension;
+    std::string ret(label.str());
+    label << ":";
+    emit(label.str());
+    return ret;
 }
 
-int CodeBuffer::emit(const string &s){
+size_t CodeBuffer::emit(const string &s){
+    // returns "address" to jump to
     buffer.push_back(s);
 	return buffer.size() - 1;
 }
 
 void CodeBuffer::bpatch(const vector<pair<int,BranchLabelIndex>>& address_list, const std::string &label){
-    for(vector<pair<int,BranchLabelIndex>>::const_iterator i = address_list.begin(); i != address_list.end(); i++){
-    	int address = (*i).first;
-    	BranchLabelIndex labelIndex = (*i).second;
+    for(const auto & i : address_list){
+    	int address = i.first;
+    	BranchLabelIndex labelIndex = i.second;
 		replace(buffer[address], "@", "%" + label, labelIndex);
     }
 }
 
 void CodeBuffer::printCodeBuffer(){
-	for (std::vector<string>::const_iterator it = buffer.begin(); it != buffer.end(); ++it) 
+	for (const auto & it : buffer)
 	{
-		cout << *it << endl;
+		cout << it << endl;
     }
 }
 
@@ -65,9 +67,9 @@ void CodeBuffer::emitGlobal(const std::string& dataLine)
 
 void CodeBuffer::printGlobalBuffer()
 {
-	for (vector<string>::const_iterator it = globalDefs.begin(); it != globalDefs.end(); ++it)
+	for (const auto & globalDef : globalDefs)
 	{
-		cout << *it << endl;
+		cout << globalDef << endl;
 	}
 }
 

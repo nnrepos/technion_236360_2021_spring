@@ -21,4 +21,5 @@ ADD_FLEX_BISON_DEPENDENCY(Lexer Parser)
 INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR})
 
 ADD_EXECUTABLE(hw3 ${FLEX_Lexer_OUTPUTS} ${BISON_Parser_OUTPUTS}
-        hw3_output.cpp typedefs.cpp parse_utils.cpp hw3_output.cpp semantics.cpp symbol_table.cpp main.cpp bp.cpp)
+        hw3_output.cpp typedefs.cpp compiler.cpp hw3_output.cpp semantics.cpp symbol_table.cpp main.cpp
+        bp.cpp code_gen.cpp)

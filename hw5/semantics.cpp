@@ -41,7 +41,7 @@ bool SemanticChecks::IsLegalCallTypes(STypeFunctionSymbolPtr &func, STypeExpList
     }
 
     for (size_t i = 0; i < func->parameters.size(); ++i) {
-        if (!IsLegalAssignTypes(func->parameters[i].general_type, exp_list->exp_list[i].general_type)) {
+        if (!IsLegalAssignTypes(func->parameters[i].general_type, exp_list->exp_list[i]->general_type)) {
             return false;
         }
     }
@@ -90,7 +90,7 @@ bool SemanticChecks::IsLegalRelopTypes(Type first, Type second) {
 
 Type SemanticChecks::CheckAndGetBinOpType(Type first, Type second) {
     if (!IsLegalRelopTypes(first, second)) {
-        return OTHER_TYPE;
+        return ERROR_TYPE;
     }
     if (first == INT_TYPE || second == INT_TYPE) {
         return INT_TYPE;

@@ -100,22 +100,17 @@ int LexToken(int bison_enum, string token) {
     STypePtr result = nullptr;
 
     switch (bison_enum) {
-        case NUM: {
+        case NUM:
             result.reset(new STypeNumber(token));
-
-        }
             break;
-
         case MULT_DIV:
         case PLUS_MINUS:
         case ID:
         case STRING:
         case INEQUALITY:
-        case EQUAL_UNEQUAL: {
+        case EQUAL_UNEQUAL:
             result.reset(new STypeString(token));
-        }
             break;
-
         default:
             break;
     }
@@ -125,7 +120,7 @@ int LexToken(int bison_enum, string token) {
     return bison_enum;
 }
 
-void errorLexAndExit(int lineno){
+void errorLexAndExit(int lineno) {
     errorLex(lineno);
     exit(0);
 }

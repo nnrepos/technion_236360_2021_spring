@@ -1,18 +1,19 @@
-#include "parse_utils.h"
+#include "compiler.h"
 
 #include <memory>
+#include <utility>
 
-ParseUtils::ParseUtils() : symbol_table(), semantic_checks(symbol_table) {
+Compiler::Compiler() : symbol_table(), semantic_checks(symbol_table), code_gen(semantic_checks) {
 
 }
 
 
-ParseUtils &ParseUtils::instance() {
-    static ParseUtils parse_utils;
-    return parse_utils;
+Compiler &Compiler::instance() {
+    static Compiler compiler;
+    return compiler;
 }
 
-void ParseUtils::ParseProgram(int lineno) {
+void Compiler::ParseProgram(int lineno) {
     if (!semantic_checks.IsMainDefined()) {
         errorMainMissing();
         exit(0);
@@ -21,11 +22,11 @@ void ParseUtils::ParseProgram(int lineno) {
     symbol_table.PopScope();
 }
 
-void ParseUtils::ParseFuncs(int lineno) {
+void Compiler::ParseFuncs(int lineno) {
     // nop
 }
 
-STypePtr ParseUtils::ParseFuncHead(int lineno, STypePtr ret_type, STypePtr id, STypePtr formals) {
+STypePtr Compiler::ParseFuncHead(int lineno, const STypePtr& ret_type, const STypePtr& id, const STypePtr& formals) {
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
     auto dynamic_cast_ret_type = dynamic_pointer_cast<STypeCType>(ret_type);
     auto dynamic_cast_formals = dynamic_pointer_cast<STypeArgList>(formals);
@@ -39,7 +40,7 @@ STypePtr ParseUtils::ParseFuncHead(int lineno, STypePtr ret_type, STypePtr id, S
                                                             dynamic_cast_formals->arg_list);
     symbol_table.AddFunction(function_symbol);
     symbol_table.PushFunctionScope(FUNCTION_SCOPE, dynamic_cast_ret_type->general_type, function_symbol);
-    for (auto param:function_symbol->parameters) {
+    for (const auto& param:function_symbol->parameters) {
         auto param_symbol = make_shared<STypeSymbol>(param);
         if (semantic_checks.IsSymbolDefined(param_symbol->name)) {
             errorDef(lineno, param_symbol->name);
@@ -51,24 +52,24 @@ STypePtr ParseUtils::ParseFuncHead(int lineno, STypePtr ret_type, STypePtr id, S
     return function_symbol;
 }
 
-void ParseUtils::ParseFuncDecl(int lineno) {
+void Compiler::ParseFuncDecl(int lineno) {
 }
 
-STypePtr ParseUtils::ParseRetType(int lineno, STypePtr type) {
+STypePtr Compiler::ParseRetType(int lineno, STypePtr type) {
     return type;
 }
 
-STypeCTypePtr ParseUtils::ParseRetType(int lineno) {
+STypeCTypePtr Compiler::ParseRetType(int lineno) {
     auto type_pointer = make_shared<STypeCType>(VOID_TYPE);
     return type_pointer;
 }
 
-STypeArgListPtr ParseUtils::ParseFormals(int lineno) {
+STypeArgListPtr Compiler::ParseFormals(int lineno) {
     auto formals_pointer = make_shared<STypeArgList>();
     return formals_pointer;
 }
 
-STypeArgListPtr ParseUtils::ParseFormals(int lineno, STypePtr formals) {
+STypeArgListPtr Compiler::ParseFormals(int lineno, const STypePtr& formals) {
     auto dynamic_cast_formals = dynamic_pointer_cast<STypeArgList>(formals);
 
     auto formals_pointer = make_shared<STypeArgList>();
@@ -80,7 +81,7 @@ STypeArgListPtr ParseUtils::ParseFormals(int lineno, STypePtr formals) {
     return formals_pointer;
 }
 
-STypeArgListPtr ParseUtils::ParseFormalsList(int lineno, STypePtr formal) {
+STypeArgListPtr Compiler::ParseFormalsList(int lineno, const STypePtr& formal) {
     auto dynamic_cast_formal = dynamic_pointer_cast<STypeSymbol>(formal);
 
     auto arg_list_pointer = make_shared<STypeArgList>();
@@ -88,7 +89,7 @@ STypeArgListPtr ParseUtils::ParseFormalsList(int lineno, STypePtr formal) {
     return arg_list_pointer;
 }
 
-STypeArgListPtr ParseUtils::ParseFormalsList(int lineno, STypePtr formal, STypePtr formals_list) {
+STypeArgListPtr Compiler::ParseFormalsList(int lineno, const STypePtr& formal, const STypePtr& formals_list) {
     auto dynamic_cast_formals_list = dynamic_pointer_cast<STypeArgList>(formals_list);
     auto dynamic_cast_formal = dynamic_pointer_cast<STypeSymbol>(formal);
 
@@ -96,7 +97,7 @@ STypeArgListPtr ParseUtils::ParseFormalsList(int lineno, STypePtr formal, STypeP
     return dynamic_cast_formals_list;
 }
 
-STypeSymbolPtr ParseUtils::ParseFormalDecl(int lineno, STypePtr type, STypePtr id) {
+STypeSymbolPtr Compiler::ParseFormalDecl(int lineno, const STypePtr& type, const STypePtr& id) {
     auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
@@ -105,15 +106,15 @@ STypeSymbolPtr ParseUtils::ParseFormalDecl(int lineno, STypePtr type, STypePtr i
     return symbol_pointer;
 }
 
-void ParseUtils::ParseStatements(int lineno) {
+void Compiler::ParseStatements(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementOfStatements(int lineno) {
+void Compiler::ParseStatementOfStatements(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementType(int lineno, STypePtr type, STypePtr id) {
+void Compiler::ParseStatementType(int lineno, const STypePtr& type, const STypePtr& id) {
     auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
@@ -126,7 +127,7 @@ void ParseUtils::ParseStatementType(int lineno, STypePtr type, STypePtr id) {
     symbol_table.AddVariable(symbol);
 }
 
-void ParseUtils::ParseStatementTypeAssign(int lineno, STypePtr type, STypePtr id, STypePtr exp) {
+void Compiler::ParseStatementTypeAssign(int lineno, const STypePtr& type, const STypePtr& id, const STypePtr& exp) {
     auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
@@ -149,7 +150,7 @@ void ParseUtils::ParseStatementTypeAssign(int lineno, STypePtr type, STypePtr id
     symbol_table.AddVariable(symbol);
 }
 
-void ParseUtils::ParseStatementAssign(int lineno, STypePtr id, STypePtr exp) {
+void Compiler::ParseStatementAssign(int lineno, const STypePtr& id, const STypePtr& exp) {
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
     if (!semantic_checks.IsSymbolDefined(dynamic_cast_id->token)) {
@@ -177,18 +178,18 @@ void ParseUtils::ParseStatementAssign(int lineno, STypePtr id, STypePtr exp) {
     }
 }
 
-void ParseUtils::ParseStatementCall(int lineno) {
+void Compiler::ParseStatementCall(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementReturn(int lineno) {
+void Compiler::ParseStatementReturn(int lineno) {
     if (!semantic_checks.IsLegalReturnType(VOID_TYPE)) {
         errorMismatch(lineno);
         exit(0);
     }
 }
 
-void ParseUtils::ParseStatementReturnExp(int lineno, STypePtr exp) {
+void Compiler::ParseStatementReturnExp(int lineno, const STypePtr& exp) {
     if (semantic_checks.IsFunctionType(exp->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(exp);
         errorUndef(lineno, cast_function->name);
@@ -201,37 +202,37 @@ void ParseUtils::ParseStatementReturnExp(int lineno, STypePtr exp) {
     }
 }
 
-void ParseUtils::ParseStatementIf(int lineno) {
+void Compiler::ParseStatementIf(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementIfElse(int lineno) {
+void Compiler::ParseStatementIfElse(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementWhile(int lineno) {
+void Compiler::ParseStatementWhile(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementSwitch(int lineno) {
+void Compiler::ParseStatementSwitch(int lineno) {
 
 }
 
-void ParseUtils::ParseStatementBreak(int lineno) {
+void Compiler::ParseStatementBreak(int lineno) {
     if (!semantic_checks.IsLegalBreak()) {
         errorUnexpectedBreak(lineno);
         exit(0);
     }
 }
 
-void ParseUtils::ParseStatementContinue(int lineno) {
+void Compiler::ParseStatementContinue(int lineno) {
     if (!semantic_checks.IsLegalContinue()) {
         errorUnexpectedContinue(lineno);
         exit(0);
     }
 }
 
-STypePtr ParseUtils::ParseCall(int lineno, STypePtr id, STypePtr exp_list) {
+STypePtr Compiler::ParseCall(int lineno, const STypePtr& id, const STypePtr& exp_list) {
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
     if (!semantic_checks.IsSymbolDefined(dynamic_cast_id->token)) {
@@ -258,7 +259,7 @@ STypePtr ParseUtils::ParseCall(int lineno, STypePtr id, STypePtr exp_list) {
 
     if (!semantic_checks.IsLegalCallTypes(dynamic_cast_func, reversed_exp_list)) {
         vector<string> expected_args;
-        for (auto symbol:dynamic_cast_func->parameters) {
+        for (const auto& symbol:dynamic_cast_func->parameters) {
             expected_args.push_back(TypeToString(symbol.general_type));
         }
         errorPrototypeMismatch(lineno, dynamic_cast_id->token, expected_args);
@@ -266,10 +267,10 @@ STypePtr ParseUtils::ParseCall(int lineno, STypePtr id, STypePtr exp_list) {
     }
 
     auto ret_type_pointer = make_shared<STypeBase>(dynamic_cast_func->ret_type);
-    return ret_type_pointer;
+    return code_gen.EmitCall(dynamic_cast_func, dynamic_cast_exp_list);
 }
 
-STypePtr ParseUtils::ParseCall(int lineno, STypePtr id) {
+STypePtr Compiler::ParseCall(int lineno, const STypePtr& id) {
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
     if (!semantic_checks.IsSymbolDefined(dynamic_cast_id->token)) {
@@ -289,47 +290,47 @@ STypePtr ParseUtils::ParseCall(int lineno, STypePtr id) {
 
     if (!semantic_checks.IsLegalCallTypes(dynamic_cast_func, empty_exp_list)) {
         vector<string> expected_args;
-        for (auto symbol:dynamic_cast_func->parameters) {
+        for (const auto& symbol:dynamic_cast_func->parameters) {
             expected_args.push_back(TypeToString(symbol.general_type));
         }
         errorPrototypeMismatch(lineno, dynamic_cast_id->token, expected_args);
         exit(0);
     }
 
-    auto ret_type_pointer = make_shared<STypeBase>(dynamic_cast_func->ret_type);
-    return ret_type_pointer;
+
+    return code_gen.EmitCall(dynamic_cast_func);
 }
 
-STypePtr ParseUtils::ParseExplist(int lineno, STypePtr exp) {
+STypePtr Compiler::ParseExplist(int lineno, const STypePtr& exp) {
     auto exp_list_pointer = make_shared<STypeExpList>();
-    exp_list_pointer->exp_list.push_back(*exp);
+    exp_list_pointer->exp_list.push_back(exp);
     return exp_list_pointer;
 }
 
-STypePtr ParseUtils::ParseExplist(int lineno, STypePtr exp, STypePtr exp_list) {
+STypePtr Compiler::ParseExplist(int lineno, const STypePtr& exp, const STypePtr& exp_list) {
     auto dynamic_cast_exp_list = dynamic_pointer_cast<STypeExpList>(exp_list);
 
-    dynamic_cast_exp_list->exp_list.push_back(*exp);
+    dynamic_cast_exp_list->exp_list.push_back(exp);
     return dynamic_cast_exp_list;
 }
 
-STypeCTypePtr ParseUtils::ParseInt(int lineno) {
+STypeCTypePtr Compiler::ParseInt(int lineno) {
     return std::make_shared<STypeCType>(INT_TYPE);
 }
 
-STypeCTypePtr ParseUtils::ParseByte(int lineno) {
+STypeCTypePtr Compiler::ParseByte(int lineno) {
     return std::make_shared<STypeCType>(BYTE_TYPE);
 }
 
-STypeCTypePtr ParseUtils::ParseBool(int lineno) {
+STypeCTypePtr Compiler::ParseBool(int lineno) {
     return std::make_shared<STypeCType>(BOOL_TYPE);
 }
 
-STypePtr ParseUtils::ParseParentheses(int lineno, STypePtr exp) {
+STypePtr Compiler::ParseParentheses(int lineno, STypePtr exp) {
     return exp;
 }
 
-STypePtr ParseUtils::ParseBinop(int lineno, STypePtr exp1, STypePtr exp2) {
+STypeRegisterPtr Compiler::ParseBinop(int lineno, const STypePtr& exp1, string binop, const STypePtr& exp2) {
     if (semantic_checks.IsFunctionType(exp1->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(exp1);
         errorUndef(lineno, cast_function->name);
@@ -342,14 +343,16 @@ STypePtr ParseUtils::ParseBinop(int lineno, STypePtr exp1, STypePtr exp2) {
         exit(0);
     }
 
-    if (semantic_checks.CheckAndGetBinOpType(exp1->general_type, exp2->general_type) == OTHER_TYPE) {
+    if (semantic_checks.CheckAndGetBinOpType(exp1->general_type, exp2->general_type) == ERROR_TYPE) {
         errorMismatch(lineno);
         exit(0);
     }
-    return exp1;
+
+    // return register type
+    return code_gen.EmitBinop(exp1, move(binop), exp2);
 }
 
-STypePtr ParseUtils::ParseID(int lineno, STypePtr id) {
+STypePtr Compiler::ParseID(int lineno, const STypePtr& id) {
     auto dynamic_cast_string = dynamic_pointer_cast<STypeString>(id);
 
     if (!symbol_table.IsSymbolDefined(dynamic_cast_string->token)) {
@@ -361,17 +364,17 @@ STypePtr ParseUtils::ParseID(int lineno, STypePtr id) {
     return id_pointer;
 }
 
-STypePtr ParseUtils::ParseCallExp(int lineno, STypePtr call_exp) {
+STypePtr Compiler::ParseCallExp(int lineno, STypePtr call_exp) {
     return call_exp;
 }
 
-STypeNumberPtr ParseUtils::ParseNum(int lineno, STypePtr num) {
+STypeNumberPtr Compiler::ParseNum(int lineno, const STypePtr& num) {
     auto dynamic_cast_num = dynamic_pointer_cast<STypeNumber>(num);
 
     return dynamic_cast_num;
 }
 
-STypePtr ParseUtils::ParseNumB(int lineno, STypePtr num) {
+STypePtr Compiler::ParseNumB(int lineno, STypePtr num) {
     auto dynamic_cast_num = dynamic_pointer_cast<STypeNumber>(num);
 
     if (!semantic_checks.IsByteOverflow(dynamic_cast_num->token)) {
@@ -382,23 +385,23 @@ STypePtr ParseUtils::ParseNumB(int lineno, STypePtr num) {
     return num;
 }
 
-STypeStringPtr ParseUtils::ParseString(int lineno, STypePtr stype_string) {
+STypeStringPtr Compiler::ParseString(int lineno, const STypePtr& stype_string) {
     auto dynamic_cast_string = dynamic_pointer_cast<STypeString>(stype_string);
 
     return dynamic_cast_string;
 }
 
-STypeBoolPtr ParseUtils::ParseTrue(int lineno) {
+STypeBoolPtr Compiler::ParseTrue(int lineno) {
     auto bool_pointer = make_shared<STypeBool>(true);
     return bool_pointer;
 }
 
-STypeBoolPtr ParseUtils::ParseFalse(int lineno) {
+STypeBoolPtr Compiler::ParseFalse(int lineno) {
     auto bool_pointer = make_shared<STypeBool>(false);
     return bool_pointer;
 }
 
-STypePtr ParseUtils::ParseNot(int lineno, STypePtr bool_exp) {
+STypePtr Compiler::ParseNot(int lineno, STypePtr bool_exp) {
     // exp can be a bool literal or an id
     if (semantic_checks.IsFunctionType(bool_exp->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp);
@@ -414,7 +417,7 @@ STypePtr ParseUtils::ParseNot(int lineno, STypePtr bool_exp) {
     return bool_exp;
 }
 
-STypePtr ParseUtils::ParseAnd(int lineno, STypePtr bool_exp1, STypePtr bool_exp2) {
+STypePtr Compiler::ParseAnd(int lineno, STypePtr bool_exp1, const STypePtr& bool_exp2) {
     if (semantic_checks.IsFunctionType(bool_exp1->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp1);
         errorUndef(lineno, cast_function->name);
@@ -440,7 +443,7 @@ STypePtr ParseUtils::ParseAnd(int lineno, STypePtr bool_exp1, STypePtr bool_exp2
     return bool_exp1;
 }
 
-STypePtr ParseUtils::ParseOr(int lineno, STypePtr bool_exp1, STypePtr bool_exp2) {
+STypePtr Compiler::ParseOr(int lineno, STypePtr bool_exp1, const STypePtr& bool_exp2) {
     if (semantic_checks.IsFunctionType(bool_exp1->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp1);
         errorUndef(lineno, cast_function->name);
@@ -466,7 +469,7 @@ STypePtr ParseUtils::ParseOr(int lineno, STypePtr bool_exp1, STypePtr bool_exp2)
     return bool_exp1;
 }
 
-STypeBoolPtr ParseUtils::ParseRelOp(int lineno, STypePtr exp1, STypePtr exp2) {
+STypeBoolPtr Compiler::ParseRelOp(int lineno, const STypePtr& exp1, const STypePtr& exp2) {
     if (semantic_checks.IsFunctionType(exp1->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(exp1);
         errorUndef(lineno, cast_function->name);
@@ -488,7 +491,7 @@ STypeBoolPtr ParseUtils::ParseRelOp(int lineno, STypePtr exp1, STypePtr exp2) {
     return bool_pointer;
 }
 
-STypePtr ParseUtils::ParseCast(int lineno, STypePtr type, STypePtr exp) {
+STypePtr Compiler::ParseCast(int lineno, const STypePtr& type, STypePtr exp) {
     auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
 
     if (semantic_checks.IsFunctionType(exp->general_type)) {
@@ -507,35 +510,35 @@ STypePtr ParseUtils::ParseCast(int lineno, STypePtr type, STypePtr exp) {
     return exp;
 }
 
-void ParseUtils::ParseCaseList(int lineno) {
+void Compiler::ParseCaseList(int lineno) {
 
 }
 
-void ParseUtils::ParseCaseDefault(int lineno) {
+void Compiler::ParseCaseDefault(int lineno) {
 
 }
 
-void ParseUtils::ParseCaseDecl(int lineno) {
+void Compiler::ParseCaseDecl(int lineno) {
 
 }
 
-void ParseUtils::ParsePushStatementScope(int lineno) {
+void Compiler::ParsePushStatementScope(int lineno) {
     symbol_table.PushScope(STATEMENT_SCOPE);
 }
 
-void ParseUtils::ParsePushWhileScope(int lineno) {
+void Compiler::ParsePushWhileScope(int lineno) {
     symbol_table.PushScope(WHILE_SCOPE);
 }
 
-void ParseUtils::ParsePushSwitchScope(int lineno) {
+void Compiler::ParsePushSwitchScope(int lineno) {
     symbol_table.PushScope(SWITCH_SCOPE);
 }
 
-void ParseUtils::ParsePopScope(int lineno) {
+void Compiler::ParsePopScope(int lineno) {
     symbol_table.PopScope();
 }
 
-void ParseUtils::ParseCheckSwitchExp(int lineno, STypePtr num_exp) {
+void Compiler::ParseCheckSwitchExp(int lineno, const STypePtr& num_exp) {
     if (semantic_checks.IsFunctionType(num_exp->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(num_exp);
         errorUndef(lineno, cast_function->name);
@@ -548,7 +551,7 @@ void ParseUtils::ParseCheckSwitchExp(int lineno, STypePtr num_exp) {
     }
 }
 
-void ParseUtils::ParseCheckBool(int lineno, STypePtr bool_exp) {
+void Compiler::ParseCheckBool(int lineno, const STypePtr& bool_exp) {
     if (semantic_checks.IsFunctionType(bool_exp->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp);
         errorUndef(lineno, cast_function->name);

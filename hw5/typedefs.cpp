@@ -1,7 +1,9 @@
 #include "typedefs.h"
 
+#include <utility>
 
-STypeBase::STypeBase() : general_type(OTHER_TYPE) {}
+
+STypeBase::STypeBase() : general_type(ERROR_TYPE) {}
 
 STypeBase::STypeBase(Type type) : general_type(type) {}
 
@@ -68,5 +70,9 @@ STypeExpList::STypeExpList() : exp_list() {
 }
 
 STypeExpList::STypeExpList(ExpList &exp_list) : exp_list(exp_list) {
+
+}
+
+STypeRegister::STypeRegister(register_name reg_name, Type type): STypeBase(type), reg_name(move(reg_name)){
 
 }
