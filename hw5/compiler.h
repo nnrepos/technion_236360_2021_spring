@@ -44,33 +44,35 @@ public:
 
     STypeSymbolPtr ParseFormalDecl(int lineno, const STypePtr& type, const STypePtr& id);
 
-    void ParseStatements(int lineno);
+    STypeStatementPtr ParseStatements(int lineno, STypePtr &statement);
 
-    void ParseStatementOfStatements(int lineno);
+    STypeStatementPtr ParseStatements(int lineno, STypePtr &statements, STypePtr &statement);
 
-    void ParseStatementType(int lineno, const STypePtr& type, const STypePtr& id);
+    STypeStatementPtr ParseStatementOfStatements(int lineno, STypePtr &statements);
 
-    void ParseStatementTypeAssign(int lineno, const STypePtr& type, const STypePtr& id, const STypePtr& exp);
+    STypeStatementPtr ParseStatementType(int lineno, const STypePtr& type, const STypePtr& id);
 
-    void ParseStatementAssign(int lineno, const STypePtr& id, const STypePtr& exp);
+    STypeStatementPtr ParseStatementTypeAssign(int lineno, const STypePtr& type, const STypePtr& id, const STypePtr& exp);
 
-    void ParseStatementCall(int lineno);
+    STypeStatementPtr ParseStatementAssign(int lineno, const STypePtr& id, const STypePtr& exp);
 
-    void ParseStatementReturn(int lineno);
+    STypeStatementPtr ParseStatementCall(int lineno);
 
-    void ParseStatementReturnExp(int lineno, const STypePtr& exp);
+    STypeStatementPtr ParseStatementReturn(int lineno);
 
-    void ParseStatementIf(int lineno);
+    STypeStatementPtr ParseStatementReturnExp(int lineno, const STypePtr& exp);
 
-    void ParseStatementIfElse(int lineno);
+    STypeStatementPtr ParseStatementIf(int lineno);
 
-    void ParseStatementWhile(int lineno);
+    STypeStatementPtr ParseStatementIfElse(int lineno);
 
-    void ParseStatementBreak(int lineno);
+    STypeStatementPtr ParseStatementWhile(int lineno);
 
-    void ParseStatementContinue(int lineno);
+    STypeStatementPtr ParseStatementBreak(int lineno);
 
-    void ParseStatementSwitch(int lineno);
+    STypeStatementPtr ParseStatementContinue(int lineno);
+
+    STypeStatementPtr ParseStatementSwitch(int lineno);
 
     STypePtr ParseCall(int lineno, const STypePtr& id, const STypePtr& exp_list);
 
@@ -88,7 +90,7 @@ public:
 
     STypePtr ParseParentheses(int lineno, STypePtr exp);
 
-    STypeRegisterPtr ParseBinop(int lineno, const STypePtr& exp1, string binop, const STypePtr& exp2);
+    STypeRegisterPtr ParseBinop(int lineno, const STypePtr& exp1, STypePtr &binop, const STypePtr& exp2);
 
     STypePtr ParseID(int lineno, const STypePtr& id);
 
@@ -100,17 +102,17 @@ public:
 
     STypeStringPtr ParseString(int lineno, const STypePtr& stype_string);
 
-    STypeBoolPtr ParseTrue(int lineno);
+    STypeBoolExpPtr ParseTrue(int lineno);
 
-    STypeBoolPtr ParseFalse(int lineno);
+    STypeBoolExpPtr ParseFalse(int lineno);
 
-    STypePtr ParseNot(int lineno, STypePtr bool_exp);
+    STypeBoolExpPtr ParseNot(int lineno, STypePtr bool_exp);
 
-    STypePtr ParseAnd(int lineno, STypePtr bool_exp1, const STypePtr& bool_exp2);
+    STypeBoolExpPtr ParseAnd(int lineno, STypePtr bool_exp1, const STypePtr& bool_exp2);
 
-    STypePtr ParseOr(int lineno, STypePtr bool_exp1, const STypePtr& bool_exp2);
+    STypeBoolExpPtr ParseOr(int lineno, STypePtr bool_exp1, const STypePtr& bool_exp2);
 
-    STypeBoolPtr ParseRelOp(int lineno, const STypePtr& exp1, const STypePtr& exp2);
+    STypeBoolExpPtr ParseRelOp(int lineno, const STypePtr &exp1, STypePtr &relop, const STypePtr &exp2);
 
     STypePtr ParseCast(int lineno, const STypePtr& type, STypePtr exp);
 

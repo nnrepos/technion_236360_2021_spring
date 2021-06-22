@@ -8,6 +8,7 @@
 #include <vector>
 #include <unordered_map>
 #include <cassert>
+#include "bp.hpp"
 
 #define YYSTYPE STypePtr
 
@@ -39,12 +40,15 @@ enum GeneralTypeEnum {
     BOOL_TYPE,
     STRING_TYPE,
     FUNCTION_TYPE,
+    STATEMENT_TYPE,
     ERROR_TYPE
 
 };
 
 typedef GeneralTypeEnum Type;
 typedef string register_name;
+typedef pair<int,BranchLabelIndex> branch_pair;
+typedef vector<branch_pair> branch_list;
 
 // stands for... symbol? segfault? something? i dunno
 class STypeBase {
@@ -96,6 +100,23 @@ public:
 
 typedef shared_ptr<STypeRegister> STypeRegisterPtr;
 
+class STypeBoolExp : public STypeBase {
+public:
+    branch_list true_list;
+    branch_list false_list;
+    STypeBoolExp(branch_list true_list, branch_list false_list);
+};
+
+typedef shared_ptr<STypeBoolExp> STypeBoolExpPtr;
+
+class STypeStatement : public STypeBase {
+public:
+    branch_list next_list;
+    explicit STypeStatement(branch_list next_list);
+};
+
+typedef shared_ptr<STypeStatement> STypeStatementPtr;
+
 class STypeNumber : public STypeBase {
 public:
     int token;
@@ -103,14 +124,6 @@ public:
 };
 
 typedef shared_ptr<STypeNumber> STypeNumberPtr;
-
-class STypeBool : public STypeBase {
-public:
-    bool token;
-    explicit STypeBool(bool token);
-};
-
-typedef shared_ptr<STypeBool> STypeBoolPtr;
 
 class STypeSymbol : public STypeBase {
     // no virtual method needed

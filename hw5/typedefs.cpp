@@ -1,8 +1,5 @@
 #include "typedefs.h"
 
-#include <utility>
-
-
 STypeBase::STypeBase() : general_type(ERROR_TYPE) {}
 
 STypeBase::STypeBase(Type type) : general_type(type) {}
@@ -11,9 +8,6 @@ STypeString::STypeString(string &token) : STypeBase(STRING_TYPE), token(token) {
 
 STypeNumber::STypeNumber(string &token_string) : STypeBase(INT_TYPE) {
     token = stoi(token_string);
-}
-
-STypeBool::STypeBool(bool token) : STypeBase(BOOL_TYPE), token(token) {
 }
 
 STypeCType::STypeCType(Type type) : STypeBase(type) {
@@ -73,6 +67,16 @@ STypeExpList::STypeExpList(ExpList &exp_list) : exp_list(exp_list) {
 
 }
 
-STypeRegister::STypeRegister(register_name reg_name, Type type): STypeBase(type), reg_name(move(reg_name)){
+STypeRegister::STypeRegister(register_name reg_name, Type type) : STypeBase(type), reg_name(move(reg_name)) {
+
+}
+
+STypeStatement::STypeStatement(branch_list next_list) : STypeBase(STATEMENT_TYPE), next_list(move(next_list)) {
+
+}
+
+STypeBoolExp::STypeBoolExp(branch_list true_list, branch_list false_list) : STypeBase(BOOL_TYPE),
+                                                                            true_list(move(true_list)),
+                                                                            false_list(move(false_list)) {
 
 }
