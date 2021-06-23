@@ -22,8 +22,11 @@ public:
     Type ret_type;
     bool inside_while;
     bool inside_switch;
+    string while_continue_label;
+    string break_label;
 
-    Scope(ScopeType scope_type, int offset, Type ret_type, bool inside_while, bool inside_switch);
+    Scope(ScopeType scope_type, int offset, Type ret_type, bool inside_while, bool inside_switch,
+          string while_continue_label, string break_label);
 };
 
 class SymbolTable {
@@ -36,7 +39,7 @@ public:
 
     void PushScope(ScopeType scope_type);
 
-    void PushFunctionScope(ScopeType scope_type, Type ret_type, STypeFunctionSymbolPtr function_symbol);
+    void PushFunctionScope(Type ret_type, STypeFunctionSymbolPtr function_symbol);
 
     void PopScope();
 

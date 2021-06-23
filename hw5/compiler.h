@@ -62,11 +62,15 @@ public:
 
     STypeStatementPtr ParseStatementReturnExp(int lineno, const STypePtr& exp);
 
-    STypeStatementPtr ParseStatementIf(int lineno);
+    STypeStatementPtr ParseStatementIf(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement);
 
-    STypeStatementPtr ParseStatementIfElse(int lineno);
+    STypeStatementPtr
+    ParseStatementIfElse(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement, STypePtr else_label,
+                         STypePtr else_statement);
 
-    STypeStatementPtr ParseStatementWhile(int lineno);
+    STypeStatementPtr
+    ParseStatementWhile(int lineno, STypePtr while_head_label, STypePtr exp, STypePtr while_body_label,
+                        STypePtr while_statement);
 
     STypeStatementPtr ParseStatementBreak(int lineno);
 
@@ -114,7 +118,19 @@ public:
 
     STypeBoolExpPtr ParseRelOp(int lineno, const STypePtr &exp1, STypePtr &relop, const STypePtr &exp2);
 
-    STypePtr ParseCast(int lineno, const STypePtr& type, STypePtr exp);
+//    STypePtr ParseCast(int lineno, const STypePtr& type, STypePtr exp);
+
+    STypePtr ParseGenIfLabel(int lineno);
+
+    STypePtr ParseGenElseLabel(int lineno);
+
+    STypePtr ParseGenWhileHeadLabel(int lineno);
+
+    STypePtr ParseGenWhileBodyLabel(int lineno);
+
+    STypePtr ParseGenAndLabel(int lineno);
+
+    STypePtr ParseGenOrLabel(int lineno);
 
     void ParseCaseList(int lineno);
 
@@ -124,9 +140,9 @@ public:
 
     void ParsePushStatementScope(int lineno);
 
-    void ParsePushWhileScope(int lineno);
+    void ParsePushWhileScope(int lineno, STypePtr while_head_label);
 
-    void ParsePushSwitchScope(int lineno);
+    void ParsePushSwitchScope(int lineno, STypePtr switch_head_label);
 
     void ParsePopScope(int lineno);
 

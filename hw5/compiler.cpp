@@ -1,7 +1,6 @@
 #include "compiler.h"
 
 #include <memory>
-#include <utility>
 
 Compiler::Compiler() : symbol_table(), semantic_checks(symbol_table), code_gen(semantic_checks) {
 
@@ -40,7 +39,7 @@ void Compiler::ParseFuncHead(int lineno, const STypePtr& ret_type, const STypePt
     auto function_symbol = make_shared<STypeFunctionSymbol>(dynamic_cast_id->token, dynamic_cast_ret_type->general_type,
                                                             dynamic_cast_formals->arg_list);
     symbol_table.AddFunction(function_symbol);
-    symbol_table.PushFunctionScope(FUNCTION_SCOPE, dynamic_cast_ret_type->general_type, function_symbol);
+    symbol_table.PushFunctionScope(dynamic_cast_ret_type->general_type, function_symbol);
     for (const auto& param:function_symbol->parameters) {
         auto param_symbol = make_shared<STypeSymbol>(param);
         if (semantic_checks.IsSymbolDefined(param_symbol->name)) {
@@ -219,16 +218,20 @@ STypeStatementPtr Compiler::ParseStatementReturnExp(int lineno, const STypePtr& 
     return code_gen.EmitStatementReturnExp(exp);
 }
 
-STypeStatementPtr Compiler::ParseStatementIf(int lineno) {
-    return code_gen.EmitStatementIf();
+STypeStatementPtr Compiler::ParseStatementIf(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement) {
+    return code_gen.EmitStatementIf(exp, if_label, if_statement);
 }
 
-STypeStatementPtr Compiler::ParseStatementIfElse(int lineno) {
-    return code_gen.EmitStatementIfElse();
+STypeStatementPtr
+Compiler::ParseStatementIfElse(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement, STypePtr else_label,
+                               STypePtr else_statement) {
+    return code_gen.EmitStatementIfElse(exp, if_label, if_statement, else_label, else_statement);
 }
 
-STypeStatementPtr Compiler::ParseStatementWhile(int lineno) {
-    return code_gen.EmitStatementWhile();
+STypeStatementPtr
+Compiler::ParseStatementWhile(int lineno, STypePtr while_head_label, STypePtr exp, STypePtr while_body_label,
+                              STypePtr while_statement) {
+    return code_gen.EmitStatementWhile(while_head_label, exp, while_body_label, while_statement);
 }
 
 STypeStatementPtr Compiler::ParseStatementSwitch(int lineno) {
@@ -509,24 +512,24 @@ STypeBoolExpPtr Compiler::ParseRelOp(int lineno, const STypePtr &exp1, STypePtr 
     return code_gen.EmitRelOp(exp1, relop, exp2);
 }
 
-STypePtr Compiler::ParseCast(int lineno, const STypePtr& type, STypePtr exp) {
-    auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
-
-    if (semantic_checks.IsFunctionType(exp->general_type)) {
-        auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(exp);
-        errorUndef(lineno, cast_function->name);
-        exit(0);
-    }
-
-
-    if (!semantic_checks.IsLegalCast(dynamic_cast_type->general_type, exp->general_type)) {
-        errorMismatch(lineno);
-        exit(0);
-    }
-
-    exp->general_type = dynamic_cast_type->general_type;
-    return exp;
-}
+//STypePtr Compiler::ParseCast(int lineno, const STypePtr& type, STypePtr exp) {
+//    auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
+//
+//    if (semantic_checks.IsFunctionType(exp->general_type)) {
+//        auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(exp);
+//        errorUndef(lineno, cast_function->name);
+//        exit(0);
+//    }
+//
+//
+//    if (!semantic_checks.IsLegalCast(dynamic_cast_type->general_type, exp->general_type)) {
+//        errorMismatch(lineno);
+//        exit(0);
+//    }
+//
+//    exp->general_type = dynamic_cast_type->general_type;
+//    return exp;
+//}
 
 void Compiler::ParseCaseList(int lineno) {
 
@@ -544,12 +547,21 @@ void Compiler::ParsePushStatementScope(int lineno) {
     symbol_table.PushScope(STATEMENT_SCOPE);
 }
 
-void Compiler::ParsePushWhileScope(int lineno) {
+void Compiler::ParsePushWhileScope(int lineno, STypePtr while_head_label) {
+    // TODO: add while start, while end, switch end
+    // TODO: replace `in_while` and switch with is_empty
+    auto dynamic_cast_while_head_label = dynamic_pointer_cast<STypeString>(while_head_label);
+
     symbol_table.PushScope(WHILE_SCOPE);
+    symbol_table.scope_stack.top()->while_continue_label = dynamic_cast_while_head_label->token;
+    // TODO break_label = token
 }
 
-void Compiler::ParsePushSwitchScope(int lineno) {
+void Compiler::ParsePushSwitchScope(int lineno, STypePtr switch_head_label) {
+    auto dynamic_cast_switch_head_label = dynamic_pointer_cast<STypeString>(switch_head_label);
+
     symbol_table.PushScope(SWITCH_SCOPE);
+    // TODO break_label = token
 }
 
 void Compiler::ParsePopScope(int lineno) {
@@ -585,4 +597,35 @@ void Compiler::ParseCheckBool(int lineno, const STypePtr& bool_exp) {
 STypeStatementPtr Compiler::ParseStatements(int lineno, STypePtr &statements, STypePtr &statement) {
     // TODO
     return STypeStatementPtr();
+}
+
+STypePtr Compiler::ParseGenIfLabel(int lineno) {
+    auto label_name = code_gen.code_buffer.genLabel("_if");
+    return make_shared<STypeString>(label_name);
+}
+
+STypePtr Compiler::ParseGenElseLabel(int lineno) {
+    auto label_name = code_gen.code_buffer.genLabel("_else");
+    return make_shared<STypeString>(label_name);
+}
+
+STypePtr Compiler::ParseGenWhileBodyLabel(int lineno) {
+    auto label_name = code_gen.code_buffer.genLabel("_while_body");
+    return make_shared<STypeString>(label_name);
+}
+
+STypePtr Compiler::ParseGenWhileHeadLabel(int lineno) {
+    // note: `PushWhileScope` uses this return value, so we don't have to modify the scopes here
+    auto label_name = code_gen.code_buffer.genLabel("_while_head");
+    return make_shared<STypeString>(label_name);
+}
+
+STypePtr Compiler::ParseGenAndLabel(int lineno) {
+    auto label_name = code_gen.code_buffer.genLabel("_and");
+    return make_shared<STypeString>(label_name);
+}
+
+STypePtr Compiler::ParseGenOrLabel(int lineno) {
+    auto label_name = code_gen.code_buffer.genLabel("_or");
+    return make_shared<STypeString>(label_name);
 }

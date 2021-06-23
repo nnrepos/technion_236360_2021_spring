@@ -1,5 +1,7 @@
 #include "symbol_table.h"
 
+#include <utility>
+
 
 void SymbolTable::PushDefaultFunctions() {
     // push print
@@ -26,34 +28,41 @@ void SymbolTable::PushDefaultFunctions() {
 void SymbolTable::PushScope(ScopeType scope_type) {
     Type ret_type;
     bool inside_while, inside_switch;
+    string while_continue_label, while_break_label, break_label;
 
     if (scope_type == GLOBAL_SCOPE) {
         ret_type = ERROR_TYPE;
         inside_while = false;
         inside_switch = false;
+        while_continue_label = "";
+        while_break_label = "";
+        break_label = "";
     } else {
         assert(!scope_stack.empty());
         ret_type = scope_stack.top()->ret_type;
         inside_while = scope_stack.top()->inside_while;
         inside_switch = scope_stack.top()->inside_switch;
+
+        while_continue_label = scope_stack.top()->while_continue_label;
+        break_label = scope_stack.top()->break_label;
     }
 
     if (scope_type == WHILE_SCOPE) {
         inside_while = true;
     }
 
-    if(scope_type == SWITCH_SCOPE){
+    if (scope_type == SWITCH_SCOPE) {
         inside_switch = true;
     }
 
-    scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, inside_while,inside_switch));
+    scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, inside_while, inside_switch,
+                                        while_continue_label, break_label));
 }
 
-void SymbolTable::PushFunctionScope(ScopeType scope_type, Type ret_type, STypeFunctionSymbolPtr function_symbol) {
-    assert(!scope_stack.empty());
-    bool inside_while = scope_stack.top()->inside_while;
-    bool inside_switch = scope_stack.top()->inside_switch;
-    scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, inside_while, inside_switch));
+void SymbolTable::PushFunctionScope(Type ret_type, STypeFunctionSymbolPtr function_symbol) {
+    // TODO: i don't think recursion requires anything special here
+    PushScope(FUNCTION_SCOPE);
+    scope_stack.top()->ret_type = ret_type;
 
 
 }
@@ -130,8 +139,11 @@ STypeSymbolPtr SymbolTable::GetDefinedSymbol(string &symbol_name) {
 }
 
 
-Scope::Scope(ScopeType scope_type, int offset, Type ret_type, bool inside_while, bool inside_switch)
-        : scope_type(scope_type), offset(offset), ret_type(ret_type), inside_while(inside_while),
-          inside_switch(inside_switch) {
+// the labels are initialized empty
+Scope::Scope(ScopeType scope_type, int offset, Type ret_type, bool inside_while, bool inside_switch,
+             string while_continue_label, string break_label) :
+        scope_type(scope_type), offset(offset), ret_type(ret_type),
+        inside_while(inside_while), inside_switch(inside_switch),
+        while_continue_label(move(while_continue_label)), break_label(move(break_label)) {
 
 }

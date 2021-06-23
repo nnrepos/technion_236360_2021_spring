@@ -98,12 +98,12 @@ Statement: RETURN SC
     {$$ = Compiler::instance().ParseStatementReturn(yylineno);}
 Statement: RETURN Exp SC
     {$$ = Compiler::instance().ParseStatementReturnExp(yylineno, $2);}
-Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope Statement PopScope
-    {$$ = Compiler::instance().ParseStatementIf(yylineno);}
-Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope Statement PopScope ELSE PushStatementScope Statement PopScope
-    {$$ = Compiler::instance().ParseStatementIfElse(yylineno);}
-Statement: WHILE LPAREN Exp CheckBool RPAREN PushWhileScope Statement PopScope
-    {$$ = Compiler::instance().ParseStatementWhile(yylineno);}
+Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope GenIfLabel Statement PopScope
+    {$$ = Compiler::instance().ParseStatementIf(yylineno, $3, $7, $8);}
+Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope GenIfLabel Statement PopScope ELSE PushStatementScope GenElseLabel Statement PopScope
+    {$$ = Compiler::instance().ParseStatementIfElse(yylineno, $3, $7, $8, $11, $12);}
+Statement: WHILE LPAREN GenWhileHeadLabel Exp CheckBool RPAREN PushWhileScope GenWhileBodyLabel Statement PopScope
+    {$$ = Compiler::instance().ParseStatementWhile(yylineno, $3, $4, $8, $9);}
 Statement: BREAK SC
     {$$ = Compiler::instance().ParseStatementBreak(yylineno);}
 Statement: CONTINUE SC
@@ -146,16 +146,16 @@ Exp: FALSE
     {$$ = Compiler::instance().ParseFalse(yylineno);}
 Exp: NOT Exp
     {$$ = Compiler::instance().ParseNot(yylineno, $2);}
-Exp: Exp AND Exp
+Exp: Exp AND GenAndLabel Exp
     {$$ = Compiler::instance().ParseAnd(yylineno, $1, $3);}
-Exp: Exp OR Exp
+Exp: Exp OR GenOrLabel Exp
     {$$ = Compiler::instance().ParseOr(yylineno, $1, $3);}
 Exp: Exp EQUAL_UNEQUAL Exp
     {$$ = Compiler::instance().ParseRelOp(yylineno, $1, $2, $3);}
 Exp: Exp INEQUALITY Exp
     {$$ = Compiler::instance().ParseRelOp(yylineno, $1, $2, $3);}
-Exp: LPAREN Type RPAREN Exp
-    {$$ = Compiler::instance().ParseCast(yylineno, $2, $4);}
+// Exp: LPAREN Type RPAREN Exp
+//     {$$ = Compiler::instance().ParseCast(yylineno, $2, $4);}
 CaseList: CaseDecl CaseList
     {Compiler::instance().ParseCaseList(yylineno);}
 CaseList: CaseDecl
@@ -164,18 +164,32 @@ CaseList: DEFAULT COLON Statements
     {Compiler::instance().ParseCaseDefault(yylineno);}
 CaseDecl: CASE NUM COLON Statements
     {Compiler::instance().ParseCaseDecl(yylineno);}
+
+// markers
 PushStatementScope: %empty
     {Compiler::instance().ParsePushStatementScope(yylineno);}
 PushWhileScope: %empty
-    {Compiler::instance().ParsePushWhileScope(yylineno);}
+    {Compiler::instance().ParsePushWhileScope(yylineno, $-3);}
 PushSwitchScope: %empty
-    {Compiler::instance().ParsePushSwitchScope(yylineno);}
+    {Compiler::instance().ParsePushSwitchScope(yylineno, $-3);}
 PopScope: %empty
     {Compiler::instance().ParsePopScope(yylineno);}
-CheckSwitchExp : %empty
+CheckSwitchExp: %empty
     {Compiler::instance().ParseCheckSwitchExp(yylineno, $0);}
-CheckBool : %empty
+CheckBool: %empty
     {Compiler::instance().ParseCheckBool(yylineno, $0);}
+GenIfLabel: %empty
+    {$$ = Compiler::instance().ParseGenIfLabel(yylineno);}
+GenElseLabel: %empty
+    {$$ = Compiler::instance().ParseGenElseLabel(yylineno);}
+GenWhileHeadLabel: %empty
+    {$$ = Compiler::instance().ParseGenWhileHeadLabel(yylineno);}
+GenWhileBodyLabel: %empty
+    {$$ = Compiler::instance().ParseGenWhileBodyLabel(yylineno);}
+GenAndLabel: %empty
+    {$$ = Compiler::instance().ParseGenAndLabel(yylineno);}
+GenOrLabel: %empty
+    {$$ = Compiler::instance().ParseGenOrLabel(yylineno);}
 %%
 
 void yyerror(const char * message)

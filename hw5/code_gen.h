@@ -34,44 +34,73 @@ public:
 //    STypePtr EmitID(STypePtr id);
 //    STypePtr EmitCallExp(STypePtr call_exp);
 
-    STypeRegisterPtr EmitBinop(const STypePtr& exp1, string binop, const STypePtr& exp2);
+    STypeRegisterPtr EmitBinop(const STypePtr &exp1, string binop, const STypePtr &exp2);
 
-    void EmitCheckDivZero(const STypePtr& exp);
+    void EmitCheckDivZero(const STypePtr &exp);
 
     void EmitFuncHead(STypeFunctionSymbolPtr symbol);
+
     void EmitFuncDecl();
+
     STypeStatementPtr EmitStatementType(string id);
+
     STypeStatementPtr EmitStatementAssign(string id, const STypePtr &exp);
+
     STypeStatementPtr EmitStatementCall();
+
     STypeStatementPtr EmitStatementReturn();
-    STypeStatementPtr EmitStatementReturnExp(STypePtr exp);
-    STypeStatementPtr EmitStatementIf();
-    STypeStatementPtr EmitStatementIfElse();
-    STypeStatementPtr EmitStatementWhile();
+
+    STypeStatementPtr EmitStatementReturnExp(const STypePtr &exp);
+
+    STypeStatementPtr EmitStatementIf(STypePtr exp, STypePtr if_label, STypePtr if_statement);
+
+    STypeStatementPtr
+    EmitStatementIfElse(STypePtr exp, STypePtr if_label, STypePtr if_statement, STypePtr else_label,
+                        STypePtr else_statement);
+
+    STypeStatementPtr EmitStatementWhile(STypePtr while_head_label, STypePtr exp, STypePtr while_body_label,
+                                         STypePtr while_statement);
+
     STypeStatementPtr EmitStatementBreak();
+
     STypeStatementPtr EmitStatementContinue();
+
     STypeStatementPtr EmitStatementSwitch();
-    STypeRegisterPtr EmitCall(const STypeFunctionSymbolPtr& func, const STypeExpListPtr& exp_list);
-    STypeRegisterPtr EmitCall(const STypeFunctionSymbolPtr& func);
+
+    STypeRegisterPtr EmitCall(const STypeFunctionSymbolPtr &func, const STypeExpListPtr &exp_list);
+
+    STypeRegisterPtr EmitCall(const STypeFunctionSymbolPtr &func);
+
     STypeBoolExpPtr EmitTrue();
+
     STypeBoolExpPtr EmitFalse();
+
     STypeBoolExpPtr EmitNot(STypePtr bool_exp);
-    STypeBoolExpPtr EmitAnd(STypePtr bool_exp1, STypePtr bool_exp2);
-    STypeBoolExpPtr EmitOr(STypePtr bool_exp1, STypePtr bool_exp2);
-    STypeBoolExpPtr EmitRelOp(const STypePtr& exp1, STypePtr &relop, const STypePtr& exp2);
+
+    STypeBoolExpPtr EmitAnd(STypePtr bool_exp1, STypePtr and_label, STypePtr bool_exp2);
+
+    STypeBoolExpPtr EmitOr(STypePtr bool_exp1, STypePtr or_label, STypePtr bool_exp2);
+
+    STypeBoolExpPtr EmitRelOp(const STypePtr &exp1, STypePtr &relop, const STypePtr &exp2);
+
     STypeRegisterPtr EmitCast(STypePtr type, STypePtr exp);
+
     void EmitCaseList();
+
     void EmitCaseDefault();
+
     void EmitCaseDecl();
+
     void EmitProgram();
 
-    string GetNonBoolExpString(const STypePtr& exp);
+    string GetNonBoolExpString(const STypePtr &exp);
+
 
     string OffsetToRegister(int offset);
 
     string GetLLVMType(const Type &type) const;
 
-    void EmitStoreVar(int offset, const register_name& reg_to_store);
+    void EmitStoreVar(int offset, const register_name &reg_to_store);
 };
 
 
