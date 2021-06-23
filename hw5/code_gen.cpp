@@ -183,6 +183,7 @@ string CodeGen::GetLLVMType(const Type &type) const {
 }
 
 string CodeGen::GetNonBoolExpString(const STypePtr& exp) {
+    // bools are only used
     auto dynamic_cast_num_exp = dynamic_pointer_cast<STypeNumber>(exp);
     auto dynamic_cast_reg_exp = dynamic_pointer_cast<STypeRegister>(exp);
     auto dynamic_cast_str_exp = dynamic_pointer_cast<STypeString>(exp);
@@ -190,7 +191,7 @@ string CodeGen::GetNonBoolExpString(const STypePtr& exp) {
 
 
     if (dynamic_cast_num_exp) {
-        // todo
+        // TODO: remove prints at the end
         cout << "GOT NUM\n";
         return to_string(dynamic_cast_num_exp->token);
     } else if (dynamic_cast_reg_exp) {
@@ -208,12 +209,24 @@ string CodeGen::GetNonBoolExpString(const STypePtr& exp) {
 }
 
 string CodeGen::OffsetToRegister(int offset) {
-    // TODO: handle args and local vars
+    // TODO: make sure there are no assignments to function args registers
     string ret = "%";
-    return (ret + to_string(offset));
+    if (offset < 0){
+        ret += to_string(-offset-1);
+    }else{
+        auto reg_stack_offset = GenRegister();
+        ret = GenRegister();
+        assert(!stack_register.empty());
+        code_buffer.emit(reg_stack_offset + " = getelementptr i32, i32* " + stack_register +
+        + ", i32 " + to_string(offset));
+        code_buffer.emit(ret + " = load i32, i32* " + reg_stack_offset);
+    }
+
+    return ret;
 }
 
 void CodeGen::EmitProgram() {
+    // TODO: remove this
     cout << "code starts here:\n";
     code_buffer.printGlobalBuffer();
     code_buffer.printCodeBuffer();
@@ -260,7 +273,7 @@ STypeStatementPtr CodeGen::EmitStatementType(string id) {
     auto statement = make_shared<STypeStatement>(branch_list());
 
     // create default value and store in stack
-    // r = 0+0
+    // r = 0+0 (including bool)
     auto reg_default_value = GenRegister();
     code_buffer.emit(reg_default_value + " = add i32 0, 0");
 
@@ -275,6 +288,7 @@ STypeStatementPtr CodeGen::EmitStatementAssign(string id, const STypePtr& exp) {
     auto reg_result = GenRegister();
 
     if (exp->general_type == BOOL_TYPE){
+        // TODO convert to func (bool to reg). maybe add to exptoreg?
         auto dynamic_cast_bool_exp = dynamic_pointer_cast<STypeBoolExp>(exp);
 
         // create phi junction
@@ -305,16 +319,33 @@ STypeStatementPtr CodeGen::EmitStatementAssign(string id, const STypePtr& exp) {
     return statement;
 }
 
-STypePtr CodeGen::EmitFuncHead() {
-    // TODO
-    // emit define
+void CodeGen::EmitFuncHead(STypeFunctionSymbolPtr symbol) {
+    // emit definition
     string emit_string("define ");
+
+    if (symbol->ret_type == VOID_TYPE){
+        emit_string += "void @";
+    }else{
+        emit_string += "i32 @";
+    }
+
+    emit_string += symbol->name;
+    emit_string += "(";
+
+    for (size_t i=0; i<symbol->parameters.size(); ++i){
+        if (i>0){
+            emit_string += ", ";
+        }
+        emit_string += "i32";
+    }
+
+    emit_string += ") {";
+
+    code_buffer.emit(emit_string);
 
     // allocate stack
     stack_register = GenRegister();
     code_buffer.emit(stack_register + " = alloca i32, i32 " + to_string(STACK_SIZE));
-
-    return STypePtr();
 }
 
 void CodeGen::EmitStoreVar(int offset, const register_name& reg_to_store) {
@@ -331,48 +362,58 @@ void CodeGen::EmitStoreVar(int offset, const register_name& reg_to_store) {
     }
 }
 
-STypeStatementPtr CodeGen::EmitStatementAssign(STypePtr id, STypePtr exp) {
-    return STypeStatementPtr();
-}
-
 STypeStatementPtr CodeGen::EmitStatementCall() {
-    return STypeStatementPtr();
+    auto statement = make_shared<STypeStatement>(branch_list());
+    return statement;
 }
 
 STypeStatementPtr CodeGen::EmitStatementReturn() {
-    return STypeStatementPtr();
+    auto statement = make_shared<STypeStatement>(branch_list());
+    code_buffer.emit("ret void");
+    return statement;
 }
 
 STypeStatementPtr CodeGen::EmitStatementReturnExp(STypePtr exp) {
-    return STypeStatementPtr();
+    auto statement = make_shared<STypeStatement>(branch_list());
+//    auto exp_string;
+
+    code_buffer.emit("ret" + GetLLVMType(exp->general_type));
+    return statement;
 }
 
 STypeStatementPtr CodeGen::EmitStatementIf() {
-    return STypeStatementPtr();
+    auto statement = make_shared<STypeStatement>(branch_list());
+    return statement;
 }
 
 STypeStatementPtr CodeGen::EmitStatementIfElse() {
-    return STypeStatementPtr();
+    auto statement = make_shared<STypeStatement>(branch_list());
+    return statement;
 }
 
 STypeStatementPtr CodeGen::EmitStatementWhile() {
-    return STypeStatementPtr();
+    auto statement = make_shared<STypeStatement>(branch_list());
+    return statement;
 }
 
 STypeStatementPtr CodeGen::EmitStatementBreak() {
-    return STypeStatementPtr();
+    auto statement = make_shared<STypeStatement>(branch_list());
+    return statement;
 }
 
 STypeStatementPtr CodeGen::EmitStatementContinue() {
-    return STypeStatementPtr();
+    auto statement = make_shared<STypeStatement>(branch_list());
+    return statement;
 }
 
 STypeStatementPtr CodeGen::EmitStatementSwitch() {
-    return STypeStatementPtr();
+    auto statement = make_shared<STypeStatement>(branch_list());
+    return statement;
 }
 
-STypePtr CodeGen::EmitFuncDecl() {
-    return STypePtr();
+void CodeGen::EmitFuncDecl() {
+    code_buffer.emit("}");
+    stack_register.clear();
 }
 
 STypeBoolExpPtr CodeGen::EmitTrue() {

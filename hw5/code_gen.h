@@ -38,11 +38,10 @@ public:
 
     void EmitCheckDivZero(const STypePtr& exp);
 
-    STypePtr EmitFuncHead();
-    STypePtr EmitFuncDecl();
+    void EmitFuncHead(STypeFunctionSymbolPtr symbol);
+    void EmitFuncDecl();
     STypeStatementPtr EmitStatementType(string id);
     STypeStatementPtr EmitStatementAssign(string id, const STypePtr &exp);
-    STypeStatementPtr EmitStatementAssign(STypePtr id, STypePtr exp);
     STypeStatementPtr EmitStatementCall();
     STypeStatementPtr EmitStatementReturn();
     STypeStatementPtr EmitStatementReturnExp(STypePtr exp);

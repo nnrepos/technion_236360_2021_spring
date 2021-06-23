@@ -65,7 +65,7 @@ Funcs: FuncDecl Funcs
 FuncDecl: FuncHead LBRACE Statements  RBRACE PopScope  // pushing scope inside FuncHead too
     {Compiler::instance().ParseFuncDecl(yylineno);}
 FuncHead: RetType ID LPAREN Formals RPAREN
-    {$$ = Compiler::instance().ParseFuncHead(yylineno, $1, $2, $4);}
+    {Compiler::instance().ParseFuncHead(yylineno, $1, $2, $4);}
 RetType: Type
     {$$ = Compiler::instance().ParseRetType(yylineno, $1);}
 RetType: VOID

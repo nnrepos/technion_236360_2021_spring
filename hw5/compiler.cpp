@@ -20,13 +20,14 @@ void Compiler::ParseProgram(int lineno) {
     }
 
     symbol_table.PopScope();
+    code_gen.EmitProgram();
 }
 
 void Compiler::ParseFuncs(int lineno) {
     // nop
 }
 
-STypePtr Compiler::ParseFuncHead(int lineno, const STypePtr& ret_type, const STypePtr& id, const STypePtr& formals) {
+void Compiler::ParseFuncHead(int lineno, const STypePtr& ret_type, const STypePtr& id, const STypePtr& formals) {
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
     auto dynamic_cast_ret_type = dynamic_pointer_cast<STypeCType>(ret_type);
     auto dynamic_cast_formals = dynamic_pointer_cast<STypeArgList>(formals);
@@ -49,10 +50,14 @@ STypePtr Compiler::ParseFuncHead(int lineno, const STypePtr& ret_type, const STy
 
         symbol_table.AddParam(param_symbol);
     }
-    return function_symbol;
+
+    code_gen.EmitFuncHead(function_symbol);
+
+
 }
 
 void Compiler::ParseFuncDecl(int lineno) {
+    code_gen.EmitFuncDecl();
 }
 
 STypePtr Compiler::ParseRetType(int lineno, STypePtr type) {

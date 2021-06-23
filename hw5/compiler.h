@@ -28,7 +28,7 @@ public:
 
     void ParseFuncDecl(int lineno);
 
-    STypePtr ParseFuncHead(int lineno, const STypePtr& ret_type, const STypePtr& id, const STypePtr& formals);
+    void ParseFuncHead(int lineno, const STypePtr& ret_type, const STypePtr& id, const STypePtr& formals);
 
     STypePtr ParseRetType(int lineno, STypePtr type);
 
