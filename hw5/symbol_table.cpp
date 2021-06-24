@@ -26,37 +26,28 @@ void SymbolTable::PushDefaultFunctions() {
 }
 
 void SymbolTable::PushScope(ScopeType scope_type) {
+    // copy everything from top scope, unless global. the calling functions handle other stuff
     Type ret_type;
     bool inside_while, inside_switch;
-    string while_continue_label, while_break_label, break_label;
+    string while_continue_label;
+    branch_list_ptr break_list;
 
     if (scope_type == GLOBAL_SCOPE) {
+        // labels and lists are empty, no need to init
         ret_type = ERROR_TYPE;
         inside_while = false;
         inside_switch = false;
-        while_continue_label = "";
-        while_break_label = "";
-        break_label = "";
     } else {
         assert(!scope_stack.empty());
         ret_type = scope_stack.top()->ret_type;
         inside_while = scope_stack.top()->inside_while;
         inside_switch = scope_stack.top()->inside_switch;
-
         while_continue_label = scope_stack.top()->while_continue_label;
-        break_label = scope_stack.top()->break_label;
-    }
-
-    if (scope_type == WHILE_SCOPE) {
-        inside_while = true;
-    }
-
-    if (scope_type == SWITCH_SCOPE) {
-        inside_switch = true;
+        break_list = scope_stack.top()->break_list;
     }
 
     scope_stack.push(make_shared<Scope>(scope_type, current_offset, ret_type, inside_while, inside_switch,
-                                        while_continue_label, break_label));
+                                        while_continue_label, break_list));
 }
 
 void SymbolTable::PushFunctionScope(Type ret_type, STypeFunctionSymbolPtr function_symbol) {
@@ -64,11 +55,12 @@ void SymbolTable::PushFunctionScope(Type ret_type, STypeFunctionSymbolPtr functi
     PushScope(FUNCTION_SCOPE);
     scope_stack.top()->ret_type = ret_type;
 
-
 }
 
 void SymbolTable::PopScope() {
-    endScope();
+    if (PRINT_EXTRA) {
+        endScope();
+    }
 
     // in global scope - functions only; in non-global scope - variables only
     if (scope_stack.top()->scope_type == GLOBAL_SCOPE) {
@@ -78,7 +70,9 @@ void SymbolTable::PopScope() {
             vector<string> string_types;
             ArgListToStrings(dynamic_cast_func->parameters, string_types);
             string ret_type = TypeToString(dynamic_cast_func->ret_type);
-            printID(dynamic_cast_func->name, 0, makeFunctionType(ret_type, string_types));
+            if (PRINT_EXTRA) {
+                printID(dynamic_cast_func->name, 0, makeFunctionType(ret_type, string_types));
+            }
             symbols_map.erase(dynamic_cast_func->name);
         }
 
@@ -86,7 +80,9 @@ void SymbolTable::PopScope() {
         for (const auto &basic_symbol:scope_stack.top()->symbols) {
             assert(basic_symbol->general_type != FUNCTION_TYPE);
             string type = TypeToString(basic_symbol->general_type);
-            printID(basic_symbol->name, basic_symbol->offset, type);
+            if (PRINT_EXTRA) {
+                printID(basic_symbol->name, basic_symbol->offset, type);
+            }
             symbols_map.erase(basic_symbol->name);
         }
     }
@@ -141,9 +137,9 @@ STypeSymbolPtr SymbolTable::GetDefinedSymbol(string &symbol_name) {
 
 // the labels are initialized empty
 Scope::Scope(ScopeType scope_type, int offset, Type ret_type, bool inside_while, bool inside_switch,
-             string while_continue_label, string break_label) :
+             string while_continue_label, branch_list_ptr break_list) :
         scope_type(scope_type), offset(offset), ret_type(ret_type),
         inside_while(inside_while), inside_switch(inside_switch),
-        while_continue_label(move(while_continue_label)), break_label(move(break_label)) {
+        while_continue_label(move(while_continue_label)), break_list(move(break_list)) {
 
 }

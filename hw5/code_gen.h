@@ -20,6 +20,8 @@ public:
 
     register_name GenRegister();
 
+    register_name GenGlobalRegister();
+
     void EmitGlobalFunctions();
 
 
@@ -40,7 +42,7 @@ public:
 
     void EmitFuncHead(STypeFunctionSymbolPtr symbol);
 
-    void EmitFuncDecl();
+    void EmitFuncDecl(STypePtr statements, STypePtr next_list_as_statement, STypePtr next_label);
 
     STypeStatementPtr EmitStatementType(string id);
 
@@ -58,8 +60,10 @@ public:
     EmitStatementIfElse(STypePtr exp, STypePtr if_label, STypePtr if_statement, STypePtr else_label,
                         STypePtr else_statement);
 
-    STypeStatementPtr EmitStatementWhile(STypePtr while_head_label, STypePtr exp, STypePtr while_body_label,
-                                         STypePtr while_statement);
+    STypeStatementPtr
+    EmitStatementWhile(STypePtr while_head_label, STypePtr exp, STypePtr while_body_label,
+                       STypePtr while_statement, STypePtr list_as_statement,
+                       branch_list_ptr break_list);
 
     STypeStatementPtr EmitStatementBreak();
 
@@ -96,11 +100,25 @@ public:
     string GetNonBoolExpString(const STypePtr &exp);
 
 
-    string OffsetToRegister(int offset);
+    string SymbolToRegister(int offset, Type type);
 
     string GetLLVMType(const Type &type) const;
 
-    void EmitStoreVar(int offset, const register_name &reg_to_store);
+    void EmitStoreRegister(int offset, const register_name &reg_to_store);
+
+    STypeRegisterPtr EmitLoadRegister(int offset, Type type);
+
+    STypeStatementPtr EmitBranchNext();
+
+    STypeRegisterPtr EmitString(const STypePtr &stype_string);
+
+    STypePtr EmitID(STypeSymbolPtr symbol);
+
+    void EmitBoolExpToRegister(const STypePtr &exp, const register_name &reg_result);
+
+    STypePtr RegisterToBoolExp(string &reg_source);
+
+    STypeStatementPtr EmitBranchWhileHead();
 };
 
 

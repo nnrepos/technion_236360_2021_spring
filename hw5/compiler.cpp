@@ -26,7 +26,7 @@ void Compiler::ParseFuncs(int lineno) {
     // nop
 }
 
-void Compiler::ParseFuncHead(int lineno, const STypePtr& ret_type, const STypePtr& id, const STypePtr& formals) {
+void Compiler::ParseFuncHead(int lineno, const STypePtr &ret_type, const STypePtr &id, const STypePtr &formals) {
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
     auto dynamic_cast_ret_type = dynamic_pointer_cast<STypeCType>(ret_type);
     auto dynamic_cast_formals = dynamic_pointer_cast<STypeArgList>(formals);
@@ -40,7 +40,7 @@ void Compiler::ParseFuncHead(int lineno, const STypePtr& ret_type, const STypePt
                                                             dynamic_cast_formals->arg_list);
     symbol_table.AddFunction(function_symbol);
     symbol_table.PushFunctionScope(dynamic_cast_ret_type->general_type, function_symbol);
-    for (const auto& param:function_symbol->parameters) {
+    for (const auto &param:function_symbol->parameters) {
         auto param_symbol = make_shared<STypeSymbol>(param);
         if (semantic_checks.IsSymbolDefined(param_symbol->name)) {
             errorDef(lineno, param_symbol->name);
@@ -55,8 +55,8 @@ void Compiler::ParseFuncHead(int lineno, const STypePtr& ret_type, const STypePt
 
 }
 
-void Compiler::ParseFuncDecl(int lineno) {
-    code_gen.EmitFuncDecl();
+void Compiler::ParseFuncDecl(int lineno, STypePtr statements, STypePtr next_list_as_statement, STypePtr next_label) {
+    code_gen.EmitFuncDecl(statements, next_list_as_statement, next_label);
 }
 
 STypePtr Compiler::ParseRetType(int lineno, STypePtr type) {
@@ -73,7 +73,7 @@ STypeArgListPtr Compiler::ParseFormals(int lineno) {
     return formals_pointer;
 }
 
-STypeArgListPtr Compiler::ParseFormals(int lineno, const STypePtr& formals) {
+STypeArgListPtr Compiler::ParseFormals(int lineno, const STypePtr &formals) {
     auto dynamic_cast_formals = dynamic_pointer_cast<STypeArgList>(formals);
 
     auto formals_pointer = make_shared<STypeArgList>();
@@ -85,7 +85,7 @@ STypeArgListPtr Compiler::ParseFormals(int lineno, const STypePtr& formals) {
     return formals_pointer;
 }
 
-STypeArgListPtr Compiler::ParseFormalsList(int lineno, const STypePtr& formal) {
+STypeArgListPtr Compiler::ParseFormalsList(int lineno, const STypePtr &formal) {
     auto dynamic_cast_formal = dynamic_pointer_cast<STypeSymbol>(formal);
 
     auto arg_list_pointer = make_shared<STypeArgList>();
@@ -93,7 +93,7 @@ STypeArgListPtr Compiler::ParseFormalsList(int lineno, const STypePtr& formal) {
     return arg_list_pointer;
 }
 
-STypeArgListPtr Compiler::ParseFormalsList(int lineno, const STypePtr& formal, const STypePtr& formals_list) {
+STypeArgListPtr Compiler::ParseFormalsList(int lineno, const STypePtr &formal, const STypePtr &formals_list) {
     auto dynamic_cast_formals_list = dynamic_pointer_cast<STypeArgList>(formals_list);
     auto dynamic_cast_formal = dynamic_pointer_cast<STypeSymbol>(formal);
 
@@ -101,7 +101,7 @@ STypeArgListPtr Compiler::ParseFormalsList(int lineno, const STypePtr& formal, c
     return dynamic_cast_formals_list;
 }
 
-STypeSymbolPtr Compiler::ParseFormalDecl(int lineno, const STypePtr& type, const STypePtr& id) {
+STypeSymbolPtr Compiler::ParseFormalDecl(int lineno, const STypePtr &type, const STypePtr &id) {
     auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
@@ -111,15 +111,31 @@ STypeSymbolPtr Compiler::ParseFormalDecl(int lineno, const STypePtr& type, const
 }
 
 STypeStatementPtr Compiler::ParseStatements(int lineno, STypePtr &statement) {
-    // TODO all statements
-    return STypeStatementPtr();
+    auto dynamic_cast_statement = dynamic_pointer_cast<STypeStatement>(statement);
+    return dynamic_cast_statement;
 }
+
+STypeStatementPtr
+Compiler::ParseStatements(int lineno, STypePtr statements, STypePtr next_list_as_statement, STypePtr next_label,
+                          STypePtr next_statement) {
+    auto dynamic_cast_statements = dynamic_pointer_cast<STypeStatement>(statements);
+    auto dynamic_cast_next_list = dynamic_pointer_cast<STypeStatement>(next_list_as_statement);
+    auto dynamic_cast_next_label = dynamic_pointer_cast<STypeString>(next_label);
+    auto dynamic_cast_next_statement = dynamic_pointer_cast<STypeStatement>(next_statement);
+
+    code_gen.code_buffer.bpatch(dynamic_cast_statements->next_list, dynamic_cast_next_label->token);
+    code_gen.code_buffer.bpatch(dynamic_cast_next_list->next_list, dynamic_cast_next_label->token);
+
+    return dynamic_cast_next_statement;
+}
+
 
 STypeStatementPtr Compiler::ParseStatementOfStatements(int lineno, STypePtr &statements) {
-    return STypeStatementPtr();
+    auto dynamic_cast_statements = dynamic_pointer_cast<STypeStatement>(statements);
+    return dynamic_cast_statements;
 }
 
-STypeStatementPtr Compiler::ParseStatementType(int lineno, const STypePtr& type, const STypePtr& id) {
+STypeStatementPtr Compiler::ParseStatementType(int lineno, const STypePtr &type, const STypePtr &id) {
     auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
@@ -134,7 +150,8 @@ STypeStatementPtr Compiler::ParseStatementType(int lineno, const STypePtr& type,
     return code_gen.EmitStatementType(dynamic_cast_id->token);
 }
 
-STypeStatementPtr Compiler::ParseStatementTypeAssign(int lineno, const STypePtr& type, const STypePtr& id, const STypePtr& exp) {
+STypeStatementPtr
+Compiler::ParseStatementTypeAssign(int lineno, const STypePtr &type, const STypePtr &id, const STypePtr &exp) {
     auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
@@ -160,7 +177,7 @@ STypeStatementPtr Compiler::ParseStatementTypeAssign(int lineno, const STypePtr&
     return code_gen.EmitStatementAssign(dynamic_cast_id->token, exp);
 }
 
-STypeStatementPtr Compiler::ParseStatementAssign(int lineno, const STypePtr& id, const STypePtr& exp) {
+STypeStatementPtr Compiler::ParseStatementAssign(int lineno, const STypePtr &id, const STypePtr &exp) {
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
     if (!semantic_checks.IsSymbolDefined(dynamic_cast_id->token)) {
@@ -203,7 +220,7 @@ STypeStatementPtr Compiler::ParseStatementReturn(int lineno) {
     return code_gen.EmitStatementReturn();
 }
 
-STypeStatementPtr Compiler::ParseStatementReturnExp(int lineno, const STypePtr& exp) {
+STypeStatementPtr Compiler::ParseStatementReturnExp(int lineno, const STypePtr &exp) {
     if (semantic_checks.IsFunctionType(exp->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(exp);
         errorUndef(lineno, cast_function->name);
@@ -230,11 +247,22 @@ Compiler::ParseStatementIfElse(int lineno, STypePtr exp, STypePtr if_label, STyp
 
 STypeStatementPtr
 Compiler::ParseStatementWhile(int lineno, STypePtr while_head_label, STypePtr exp, STypePtr while_body_label,
-                              STypePtr while_statement) {
-    return code_gen.EmitStatementWhile(while_head_label, exp, while_body_label, while_statement);
+                              STypePtr while_statement, STypePtr list_as_statement) {
+    // pop scope
+    assert(symbol_table.scope_stack.top()->scope_type == WHILE_SCOPE);
+    auto break_list = symbol_table.scope_stack.top()->break_list;
+
+    // emit
+    return code_gen.EmitStatementWhile(while_head_label, exp, while_body_label, while_statement, list_as_statement,
+                                       break_list);
 }
 
 STypeStatementPtr Compiler::ParseStatementSwitch(int lineno) {
+    // pop scope
+    assert(symbol_table.scope_stack.top()->scope_type == SWITCH_SCOPE);
+    auto break_list = symbol_table.scope_stack.top()->break_list;
+
+    // emit TODO
     return code_gen.EmitStatementSwitch();
 }
 
@@ -256,7 +284,7 @@ STypeStatementPtr Compiler::ParseStatementContinue(int lineno) {
     return code_gen.EmitStatementContinue();
 }
 
-STypePtr Compiler::ParseCall(int lineno, const STypePtr& id, const STypePtr& exp_list) {
+STypePtr Compiler::ParseCall(int lineno, const STypePtr &id, const STypePtr &exp_list) {
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
     if (!semantic_checks.IsSymbolDefined(dynamic_cast_id->token)) {
@@ -283,7 +311,7 @@ STypePtr Compiler::ParseCall(int lineno, const STypePtr& id, const STypePtr& exp
 
     if (!semantic_checks.IsLegalCallTypes(dynamic_cast_func, reversed_exp_list)) {
         vector<string> expected_args;
-        for (const auto& symbol:dynamic_cast_func->parameters) {
+        for (const auto &symbol:dynamic_cast_func->parameters) {
             expected_args.push_back(TypeToString(symbol.general_type));
         }
         errorPrototypeMismatch(lineno, dynamic_cast_id->token, expected_args);
@@ -293,7 +321,7 @@ STypePtr Compiler::ParseCall(int lineno, const STypePtr& id, const STypePtr& exp
     return code_gen.EmitCall(dynamic_cast_func, dynamic_cast_exp_list);
 }
 
-STypePtr Compiler::ParseCall(int lineno, const STypePtr& id) {
+STypePtr Compiler::ParseCall(int lineno, const STypePtr &id) {
     auto dynamic_cast_id = dynamic_pointer_cast<STypeString>(id);
 
     if (!semantic_checks.IsSymbolDefined(dynamic_cast_id->token)) {
@@ -313,7 +341,7 @@ STypePtr Compiler::ParseCall(int lineno, const STypePtr& id) {
 
     if (!semantic_checks.IsLegalCallTypes(dynamic_cast_func, empty_exp_list)) {
         vector<string> expected_args;
-        for (const auto& symbol:dynamic_cast_func->parameters) {
+        for (const auto &symbol:dynamic_cast_func->parameters) {
             expected_args.push_back(TypeToString(symbol.general_type));
         }
         errorPrototypeMismatch(lineno, dynamic_cast_id->token, expected_args);
@@ -323,13 +351,13 @@ STypePtr Compiler::ParseCall(int lineno, const STypePtr& id) {
     return code_gen.EmitCall(dynamic_cast_func);
 }
 
-STypePtr Compiler::ParseExplist(int lineno, const STypePtr& exp) {
+STypePtr Compiler::ParseExplist(int lineno, const STypePtr &exp) {
     auto exp_list_pointer = make_shared<STypeExpList>();
     exp_list_pointer->exp_list.push_back(exp);
     return exp_list_pointer;
 }
 
-STypePtr Compiler::ParseExplist(int lineno, const STypePtr& exp, const STypePtr& exp_list) {
+STypePtr Compiler::ParseExplist(int lineno, const STypePtr &exp, const STypePtr &exp_list) {
     auto dynamic_cast_exp_list = dynamic_pointer_cast<STypeExpList>(exp_list);
 
     dynamic_cast_exp_list->exp_list.push_back(exp);
@@ -337,22 +365,22 @@ STypePtr Compiler::ParseExplist(int lineno, const STypePtr& exp, const STypePtr&
 }
 
 STypeCTypePtr Compiler::ParseInt(int lineno) {
-    return std::make_shared<STypeCType>(INT_TYPE);
+    return make_shared<STypeCType>(INT_TYPE);
 }
 
 STypeCTypePtr Compiler::ParseByte(int lineno) {
-    return std::make_shared<STypeCType>(BYTE_TYPE);
+    return make_shared<STypeCType>(BYTE_TYPE);
 }
 
 STypeCTypePtr Compiler::ParseBool(int lineno) {
-    return std::make_shared<STypeCType>(BOOL_TYPE);
+    return make_shared<STypeCType>(BOOL_TYPE);
 }
 
 STypePtr Compiler::ParseParentheses(int lineno, STypePtr exp) {
     return exp;
 }
 
-STypeRegisterPtr Compiler::ParseBinop(int lineno, const STypePtr& exp1, STypePtr &binop, const STypePtr& exp2) {
+STypeRegisterPtr Compiler::ParseBinop(int lineno, const STypePtr &exp1, STypePtr &binop, const STypePtr &exp2) {
     if (semantic_checks.IsFunctionType(exp1->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(exp1);
         errorUndef(lineno, cast_function->name);
@@ -375,7 +403,7 @@ STypeRegisterPtr Compiler::ParseBinop(int lineno, const STypePtr& exp1, STypePtr
     return code_gen.EmitBinop(exp1, dynamic_cast_binop->token, exp2);
 }
 
-STypePtr Compiler::ParseID(int lineno, const STypePtr& id) {
+STypePtr Compiler::ParseID(int lineno, const STypePtr &id) {
     auto dynamic_cast_string = dynamic_pointer_cast<STypeString>(id);
 
     if (!symbol_table.IsSymbolDefined(dynamic_cast_string->token)) {
@@ -384,14 +412,14 @@ STypePtr Compiler::ParseID(int lineno, const STypePtr& id) {
     }
 
     auto id_pointer = symbol_table.GetDefinedSymbol(dynamic_cast_string->token);
-    return id_pointer;
+    return code_gen.EmitID(id_pointer);
 }
 
 STypePtr Compiler::ParseCallExp(int lineno, STypePtr call_exp) {
     return call_exp;
 }
 
-STypeNumberPtr Compiler::ParseNum(int lineno, const STypePtr& num) {
+STypeNumberPtr Compiler::ParseNum(int lineno, const STypePtr &num) {
     auto dynamic_cast_num = dynamic_pointer_cast<STypeNumber>(num);
 
     return dynamic_cast_num;
@@ -408,19 +436,17 @@ STypePtr Compiler::ParseNumB(int lineno, STypePtr num) {
     return num;
 }
 
-STypeStringPtr Compiler::ParseString(int lineno, const STypePtr& stype_string) {
-    auto dynamic_cast_string = dynamic_pointer_cast<STypeString>(stype_string);
+STypeRegisterPtr Compiler::ParseString(int lineno, const STypePtr &stype_string) {
 
-    return dynamic_cast_string;
+    return code_gen.EmitString(stype_string);
 }
 
 STypeBoolExpPtr Compiler::ParseTrue(int lineno) {
-    // TODO: all these
-    return STypeBoolExpPtr();
+    return code_gen.EmitTrue();
 }
 
 STypeBoolExpPtr Compiler::ParseFalse(int lineno) {
-    return STypeBoolExpPtr();
+    return code_gen.EmitFalse();
 }
 
 STypeBoolExpPtr Compiler::ParseNot(int lineno, STypePtr bool_exp) {
@@ -436,10 +462,10 @@ STypeBoolExpPtr Compiler::ParseNot(int lineno, STypePtr bool_exp) {
         exit(0);
     }
 
-    return STypeBoolExpPtr();
+    return code_gen.EmitNot(bool_exp);
 }
 
-STypeBoolExpPtr Compiler::ParseAnd(int lineno, STypePtr bool_exp1, const STypePtr& bool_exp2) {
+STypeBoolExpPtr Compiler::ParseAnd(int lineno, STypePtr bool_exp1, STypePtr and_label, const STypePtr &bool_exp2) {
     if (semantic_checks.IsFunctionType(bool_exp1->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp1);
         errorUndef(lineno, cast_function->name);
@@ -462,10 +488,10 @@ STypeBoolExpPtr Compiler::ParseAnd(int lineno, STypePtr bool_exp1, const STypePt
         exit(0);
     }
 
-    return STypeBoolExpPtr();
+    return code_gen.EmitAnd(bool_exp1, move(and_label), bool_exp2);
 }
 
-STypeBoolExpPtr Compiler::ParseOr(int lineno, STypePtr bool_exp1, const STypePtr& bool_exp2) {
+STypeBoolExpPtr Compiler::ParseOr(int lineno, STypePtr bool_exp1, STypePtr or_label, const STypePtr &bool_exp2) {
     if (semantic_checks.IsFunctionType(bool_exp1->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp1);
         errorUndef(lineno, cast_function->name);
@@ -488,7 +514,7 @@ STypeBoolExpPtr Compiler::ParseOr(int lineno, STypePtr bool_exp1, const STypePtr
         exit(0);
     }
 
-    return STypeBoolExpPtr();
+    return code_gen.EmitOr(bool_exp1, or_label, bool_exp2);
 }
 
 STypeBoolExpPtr Compiler::ParseRelOp(int lineno, const STypePtr &exp1, STypePtr &relop, const STypePtr &exp2) {
@@ -548,27 +574,27 @@ void Compiler::ParsePushStatementScope(int lineno) {
 }
 
 void Compiler::ParsePushWhileScope(int lineno, STypePtr while_head_label) {
-    // TODO: add while start, while end, switch end
-    // TODO: replace `in_while` and switch with is_empty
     auto dynamic_cast_while_head_label = dynamic_pointer_cast<STypeString>(while_head_label);
+    auto break_list = make_shared<branch_list>();
 
     symbol_table.PushScope(WHILE_SCOPE);
     symbol_table.scope_stack.top()->while_continue_label = dynamic_cast_while_head_label->token;
-    // TODO break_label = token
+    symbol_table.scope_stack.top()->break_list = break_list;
 }
 
 void Compiler::ParsePushSwitchScope(int lineno, STypePtr switch_head_label) {
     auto dynamic_cast_switch_head_label = dynamic_pointer_cast<STypeString>(switch_head_label);
+    auto break_list = make_shared<branch_list>();
 
     symbol_table.PushScope(SWITCH_SCOPE);
-    // TODO break_label = token
+    symbol_table.scope_stack.top()->break_list = break_list;
 }
 
 void Compiler::ParsePopScope(int lineno) {
     symbol_table.PopScope();
 }
 
-void Compiler::ParseCheckSwitchExp(int lineno, const STypePtr& num_exp) {
+void Compiler::ParseCheckSwitchExp(int lineno, const STypePtr &num_exp) {
     if (semantic_checks.IsFunctionType(num_exp->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(num_exp);
         errorUndef(lineno, cast_function->name);
@@ -581,7 +607,7 @@ void Compiler::ParseCheckSwitchExp(int lineno, const STypePtr& num_exp) {
     }
 }
 
-void Compiler::ParseCheckBool(int lineno, const STypePtr& bool_exp) {
+void Compiler::ParseCheckBool(int lineno, const STypePtr &bool_exp) {
     if (semantic_checks.IsFunctionType(bool_exp->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp);
         errorUndef(lineno, cast_function->name);
@@ -594,38 +620,49 @@ void Compiler::ParseCheckBool(int lineno, const STypePtr& bool_exp) {
     }
 }
 
-STypeStatementPtr Compiler::ParseStatements(int lineno, STypePtr &statements, STypePtr &statement) {
-    // TODO
-    return STypeStatementPtr();
-}
-
-STypePtr Compiler::ParseGenIfLabel(int lineno) {
+STypeStringPtr Compiler::ParseGenIfLabel(int lineno) {
     auto label_name = code_gen.code_buffer.genLabel("_if");
     return make_shared<STypeString>(label_name);
 }
 
-STypePtr Compiler::ParseGenElseLabel(int lineno) {
+STypeStringPtr Compiler::ParseGenElseLabel(int lineno) {
     auto label_name = code_gen.code_buffer.genLabel("_else");
     return make_shared<STypeString>(label_name);
 }
 
-STypePtr Compiler::ParseGenWhileBodyLabel(int lineno) {
+STypeStringPtr Compiler::ParseGenWhileBodyLabel(int lineno) {
     auto label_name = code_gen.code_buffer.genLabel("_while_body");
     return make_shared<STypeString>(label_name);
 }
 
-STypePtr Compiler::ParseGenWhileHeadLabel(int lineno) {
+STypeStringPtr Compiler::ParseGenWhileHeadLabel(int lineno) {
     // note: `PushWhileScope` uses this return value, so we don't have to modify the scopes here
     auto label_name = code_gen.code_buffer.genLabel("_while_head");
     return make_shared<STypeString>(label_name);
 }
 
-STypePtr Compiler::ParseGenAndLabel(int lineno) {
+STypeStringPtr Compiler::ParseGenAndLabel(int lineno) {
     auto label_name = code_gen.code_buffer.genLabel("_and");
     return make_shared<STypeString>(label_name);
 }
 
-STypePtr Compiler::ParseGenOrLabel(int lineno) {
+STypeStringPtr Compiler::ParseGenOrLabel(int lineno) {
     auto label_name = code_gen.code_buffer.genLabel("_or");
     return make_shared<STypeString>(label_name);
 }
+
+STypeStringPtr Compiler::ParseGenNextLabel(int lineno) {
+    auto label_name = code_gen.code_buffer.genLabel("_next");
+    return make_shared<STypeString>(label_name);
+}
+
+STypeStatementPtr Compiler::ParseBranchNext(int lineno) {
+    // in llvm we must branch before every label
+    return code_gen.EmitBranchNext();
+}
+
+STypeStatementPtr Compiler::ParseBranchWhileHead(int lineno) {
+    return code_gen.EmitBranchWhileHead();
+}
+
+

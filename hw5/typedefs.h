@@ -31,6 +31,7 @@ extern int yylex();
 
 extern char textbuff[1024];
 extern char *textbuffptr;
+extern const bool PRINT_EXTRA;
 
 
 enum GeneralTypeEnum {
@@ -49,6 +50,7 @@ typedef GeneralTypeEnum Type;
 typedef string register_name;
 typedef pair<int,BranchLabelIndex> branch_pair;
 typedef vector<branch_pair> branch_list;
+typedef shared_ptr<branch_list> branch_list_ptr;
 
 // stands for... symbol? segfault? something? i dunno
 class STypeBase {
@@ -95,7 +97,7 @@ typedef shared_ptr<STypeString> STypeStringPtr;
 class STypeRegister : public STypeBase {
 public:
     register_name reg_name;
-    STypeRegister(register_name  reg_name, Type type);
+    STypeRegister(register_name reg_name, Type type);
 };
 
 typedef shared_ptr<STypeRegister> STypeRegisterPtr;

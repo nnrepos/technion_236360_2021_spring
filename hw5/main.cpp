@@ -3,8 +3,10 @@
 
 char textbuff[1024];
 char* textbuffptr;
+const bool PRINT_EXTRA = false;
 
 int main(){
+
     yyparse();
 
     // moved parse program here because syntax error happens after the reduce

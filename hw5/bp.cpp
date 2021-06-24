@@ -20,7 +20,7 @@ std::string CodeBuffer::genLabel(const string& extension) {
     label << extension;
     std::string ret(label.str());
     label << ":";
-    emit(label.str());
+    emit("  " + label.str());
     return ret;
 }
 

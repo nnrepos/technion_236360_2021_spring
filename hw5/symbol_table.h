@@ -23,10 +23,10 @@ public:
     bool inside_while;
     bool inside_switch;
     string while_continue_label;
-    string break_label;
+    branch_list_ptr break_list;
 
     Scope(ScopeType scope_type, int offset, Type ret_type, bool inside_while, bool inside_switch,
-          string while_continue_label, string break_label);
+          string while_continue_label, branch_list_ptr break_list);
 };
 
 class SymbolTable {
