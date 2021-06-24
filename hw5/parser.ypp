@@ -62,8 +62,8 @@ Funcs:  %empty
     {Compiler::instance().ParseFuncs(yylineno);}
 Funcs: FuncDecl Funcs
     {Compiler::instance().ParseFuncs(yylineno);}
-FuncDecl: FuncHead LBRACE Statements BranchNext GenNextLabel RBRACE PopScope  // this scope is pushed inside FuncHead
-    {Compiler::instance().ParseFuncDecl(yylineno, $3, $4, $5);}
+FuncDecl: FuncHead LBRACE Statements GenNextLabel RBRACE
+    {Compiler::instance().ParseFuncDecl(yylineno, $3, $4);}
 FuncHead: RetType ID LPAREN Formals RPAREN
     {Compiler::instance().ParseFuncHead(yylineno, $1, $2, $4);}
 RetType: Type
@@ -80,8 +80,8 @@ FormalsList: FormalDecl COMMA FormalsList
     {$$ = Compiler::instance().ParseFormalsList(yylineno, $1, $3);}
 FormalDecl: Type ID
     {$$ = Compiler::instance().ParseFormalDecl(yylineno, $1, $2);}
-Statements: Statement
-    {$$ = Compiler::instance().ParseStatements(yylineno, $1);}
+Statements: Statement BranchNext
+    {$$ = Compiler::instance().ParseStatements(yylineno, $1, $2);}
 Statements: Statements BranchNext GenNextLabel Statement
     {$$ = Compiler::instance().ParseStatements(yylineno, $1, $2, $3, $4);}
 Statement: PushStatementScope LBRACE Statements RBRACE PopScope
@@ -98,18 +98,18 @@ Statement: RETURN SC
     {$$ = Compiler::instance().ParseStatementReturn(yylineno);}
 Statement: RETURN Exp SC
     {$$ = Compiler::instance().ParseStatementReturnExp(yylineno, $2);}
-Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope GenIfLabel Statement PopScope
-    {$$ = Compiler::instance().ParseStatementIf(yylineno, $3, $7, $8);}
-Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope GenIfLabel Statement PopScope ELSE PushStatementScope GenElseLabel Statement PopScope
-    {$$ = Compiler::instance().ParseStatementIfElse(yylineno, $3, $7, $8, $12, $13);}
+Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope GenIfLabel Statement PopScope BranchIfNext
+    {$$ = Compiler::instance().ParseStatementIf(yylineno, $3, $7, $8, $10);}
+Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope GenIfLabel Statement PopScope BranchIfNext ELSE PushStatementScope GenElseLabel Statement PopScope
+    {$$ = Compiler::instance().ParseStatementIfElse(yylineno, $3, $7, $8, $10, $13, $14);}
 Statement: WHILE LPAREN GenWhileHeadLabel Exp CheckBool RPAREN PushWhileScope GenWhileBodyLabel Statement BranchWhileHead
     {$$ = Compiler::instance().ParseStatementWhile(yylineno, $3, $4, $8, $9, $10);}
 Statement: BREAK SC
     {$$ = Compiler::instance().ParseStatementBreak(yylineno);}
 Statement: CONTINUE SC
     {$$ = Compiler::instance().ParseStatementContinue(yylineno);}
-Statement: SWITCH LPAREN Exp CheckSwitchExp RPAREN PushSwitchScope LBRACE CaseList RBRACE
-    {$$ = Compiler::instance().ParseStatementSwitch(yylineno);}
+Statement: SWITCH LPAREN Exp CheckSwitchExp RPAREN BranchSwitchHead PushSwitchScope LBRACE CaseList RBRACE
+    {$$ = Compiler::instance().ParseStatementSwitch(yylineno, $3, $6, $9);}
 Call: ID LPAREN ExpList RPAREN
     {$$ = Compiler::instance().ParseCall(yylineno, $1, $3);}
 Call: ID LPAREN RPAREN
@@ -156,14 +156,14 @@ Exp: Exp INEQUALITY Exp
     {$$ = Compiler::instance().ParseRelOp(yylineno, $1, $2, $3);}
 // Exp: LPAREN Type RPAREN Exp
 //     {$$ = Compiler::instance().ParseCast(yylineno, $2, $4);}
-CaseList: CaseDecl CaseList
-    {Compiler::instance().ParseCaseList(yylineno);}
-CaseList: CaseDecl
-    {Compiler::instance().ParseCaseList(yylineno);}
-CaseList: DEFAULT COLON Statements
-    {Compiler::instance().ParseCaseDefault(yylineno);}
-CaseDecl: CASE NUM COLON Statements
-    {Compiler::instance().ParseCaseDecl(yylineno);}
+CaseList: CaseDecl GenNextLabel CaseList
+    {Compiler::instance().ParseCaseList(yylineno, $1, $2, $3);}
+CaseList: CaseDecl // TODO: bpatch in switch
+    {Compiler::instance().ParseCaseList(yylineno, $1);}
+CaseList: DEFAULT COLON GenDefaultLabel Statements
+    {Compiler::instance().ParseCaseDefault(yylineno, $3, $4);}
+CaseDecl: CASE NUM COLON GenCaseDeclLabel Statements
+    {Compiler::instance().ParseCaseDecl(yylineno, $2, $4, $5);}
 
 // ~~~ markers ~~~
 // scope
@@ -197,12 +197,20 @@ GenOrLabel: %empty
     {$$ = Compiler::instance().ParseGenOrLabel(yylineno);}
 GenNextLabel: %empty
     {$$ = Compiler::instance().ParseGenNextLabel(yylineno);}
+GenDefaultLabel: %empty
+   {$$ = Compiler::instance().ParseGenDefaultLabel(yylineno);}
+GenCaseDeclLabel: %empty
+   {$$ = Compiler::instance().ParseGenCaseDeclLabel(yylineno);}
 
 // branch
 BranchNext: %empty
     {$$ = Compiler::instance().ParseBranchNext(yylineno);}
 BranchWhileHead: %empty
     {$$ = Compiler::instance().ParseBranchWhileHead(yylineno);}
+BranchIfNext: %empty
+    {$$ = Compiler::instance().ParseBranchIfNext(yylineno);}
+BranchSwitchHead: %empty
+    {$$ = Compiler::instance().ParseBranchSwitchHead(yylineno);}
 %%
 
 void yyerror(const char * message)

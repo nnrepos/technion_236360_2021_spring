@@ -1,5 +1,7 @@
 #include "typedefs.h"
 
+#include <utility>
+
 STypeBase::STypeBase() : general_type(ERROR_TYPE) {}
 
 STypeBase::STypeBase(Type type) : general_type(type) {}
@@ -78,5 +80,15 @@ STypeStatement::STypeStatement(branch_list next_list) : STypeBase(STATEMENT_TYPE
 STypeBoolExp::STypeBoolExp(branch_list true_list, branch_list false_list) : STypeBase(BOOL_TYPE),
                                                                             true_list(move(true_list)),
                                                                             false_list(move(false_list)) {
+
+}
+
+STypeCaseList::STypeCaseList(case_label_list case_list, string default_label, branch_list next_list) :
+        case_list(move(case_list)), default_label(move(default_label)), next_list(move(next_list)) {
+
+}
+
+STypeCaseDecl::STypeCaseDecl(int case_num, string case_label, branch_list next_list):
+        case_num(case_num), case_label(move(case_label)), next_list(move(next_list)) {
 
 }

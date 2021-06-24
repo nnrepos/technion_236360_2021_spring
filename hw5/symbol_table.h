@@ -39,7 +39,7 @@ public:
 
     void PushScope(ScopeType scope_type);
 
-    void PushFunctionScope(Type ret_type, STypeFunctionSymbolPtr function_symbol);
+    void PushFunctionScope(Type ret_type);
 
     void PopScope();
 

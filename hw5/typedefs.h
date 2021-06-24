@@ -48,9 +48,15 @@ enum GeneralTypeEnum {
 
 typedef GeneralTypeEnum Type;
 typedef string register_name;
+typedef string label_name;
+
 typedef pair<int,BranchLabelIndex> branch_pair;
 typedef vector<branch_pair> branch_list;
 typedef shared_ptr<branch_list> branch_list_ptr;
+
+typedef pair<int, string> case_label_pair;
+typedef vector<case_label_pair> case_label_list;
+typedef shared_ptr<case_label_list> case_label_list_ptr;
 
 // stands for... symbol? segfault? something? i dunno
 class STypeBase {
@@ -158,6 +164,26 @@ public:
 };
 
 typedef shared_ptr<STypeFunctionSymbol> STypeFunctionSymbolPtr;
+
+class STypeCaseList : public STypeBase {
+public:
+    case_label_list case_list;
+    string default_label;
+    branch_list next_list;
+    STypeCaseList(case_label_list case_list, string default_label, branch_list next_list);
+};
+
+typedef shared_ptr<STypeCaseList> STypeCaseListPtr;
+
+class STypeCaseDecl : public STypeBase {
+public:
+    int case_num;
+    string case_label;
+    branch_list next_list;
+    STypeCaseDecl(int case_num, string case_label, branch_list next_list);
+};
+
+typedef shared_ptr<STypeCaseDecl> STypeCaseDeclPtr;
 
 extern string TypeToString(Type type);
 extern void ArgListToStrings(ArgList &arg_list, vector<string> &string_vector);

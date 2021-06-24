@@ -50,8 +50,7 @@ void SymbolTable::PushScope(ScopeType scope_type) {
                                         while_continue_label, break_list));
 }
 
-void SymbolTable::PushFunctionScope(Type ret_type, STypeFunctionSymbolPtr function_symbol) {
-    // TODO: i don't think recursion requires anything special here
+void SymbolTable::PushFunctionScope(Type ret_type) {
     PushScope(FUNCTION_SCOPE);
     scope_stack.top()->ret_type = ret_type;
 

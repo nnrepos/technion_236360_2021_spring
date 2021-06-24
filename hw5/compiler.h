@@ -26,7 +26,7 @@ public:
 
     void ParseFuncs(int lineno);
 
-    void ParseFuncDecl(int lineno, STypePtr statements, STypePtr next_list_as_statement, STypePtr next_label);
+    void ParseFuncDecl(int lineno, const STypePtr& statements, const STypePtr& next_label);
 
     void ParseFuncHead(int lineno, const STypePtr &ret_type, const STypePtr &id, const STypePtr &formals);
 
@@ -44,13 +44,12 @@ public:
 
     STypeSymbolPtr ParseFormalDecl(int lineno, const STypePtr &type, const STypePtr &id);
 
-    STypeStatementPtr ParseStatements(int lineno, STypePtr &statement);
+    STypeStatementPtr
+    ParseStatements(int lineno, STypePtr &statement, STypePtr next_list_as_statement, STypePtr next_label);
 
     STypeStatementPtr
     ParseStatements(int lineno, STypePtr statements, STypePtr next_list_as_statement, STypePtr next_label,
                     STypePtr next_statement);
-
-    STypeStatementPtr ParseStatements(int lineno, STypePtr &statements, STypePtr &statement);
 
     STypeStatementPtr ParseStatementOfStatements(int lineno, STypePtr &statements);
 
@@ -67,10 +66,12 @@ public:
 
     STypeStatementPtr ParseStatementReturnExp(int lineno, const STypePtr &exp);
 
-    STypeStatementPtr ParseStatementIf(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement);
+    STypeStatementPtr ParseStatementIf(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement,
+                                       STypePtr if_list_as_statement);
 
     STypeStatementPtr
-    ParseStatementIfElse(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement, STypePtr else_label,
+    ParseStatementIfElse(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement,
+                         STypePtr if_list_as_statement, STypePtr else_label,
                          STypePtr else_statement);
 
     STypeStatementPtr
@@ -81,7 +82,8 @@ public:
 
     STypeStatementPtr ParseStatementContinue(int lineno);
 
-    STypeStatementPtr ParseStatementSwitch(int lineno);
+    STypeStatementPtr
+    ParseStatementSwitch(int lineno, STypePtr exp, STypePtr switch_list_as_statement, STypePtr case_list);
 
     STypePtr ParseCall(int lineno, const STypePtr &id, const STypePtr &exp_list);
 
@@ -139,11 +141,18 @@ public:
 
     STypeStringPtr ParseGenNextLabel(int lineno);
 
-    void ParseCaseList(int lineno);
+    STypeStringPtr ParseGenDefaultLabel(int lineno);
 
-    void ParseCaseDefault(int lineno);
+    STypeStringPtr ParseGenCaseDeclLabel(int lineno);
 
-    void ParseCaseDecl(int lineno);
+
+    STypeCaseListPtr ParseCaseList(int lineno, STypePtr case_decl, STypePtr next_label, STypePtr case_list);
+
+    STypeCaseListPtr ParseCaseList(int lineno, STypePtr case_decl);
+
+    STypeCaseListPtr ParseCaseDefault(int lineno, STypePtr default_label, STypePtr statements);
+
+    STypeCaseDeclPtr ParseCaseDecl(int lineno, STypePtr num, STypePtr case_decl_label, STypePtr statements);
 
     void ParsePushStatementScope(int lineno);
 
@@ -161,7 +170,20 @@ public:
 
     STypeStatementPtr ParseBranchWhileHead(int lineno);
 
+    STypeStatementPtr ParseBranchIfNext(int lineno);
+
+    STypeStatementPtr ParseBranchSwitchHead(int lineno);
+
+
     static Compiler &instance();
+
+    STypeCaseDeclPtr EmitCaseDecl(STypePtr num, STypePtr case_decl_label, STypePtr statements);
+
+    STypeCaseListPtr EmitCaseDefault(STypePtr default_label, STypePtr statements);
+
+    STypeCaseListPtr EmitCaseList(STypePtr case_decl);
+
+    STypeCaseListPtr EmitCaseList(STypePtr case_decl, STypePtr next_label, STypePtr case_list);
 };
 
 
