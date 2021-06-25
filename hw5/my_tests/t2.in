@@ -1,0 +1,12 @@
+void main(){
+   int x = 2000111222;
+   int y = 2000111223;
+   int z = x+y;
+
+   switch(4) {
+       case 3: z = 5;
+       case 1: z = x; break;
+       case 2: return;
+       default: printi(z);
+   }
+}

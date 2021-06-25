@@ -50,7 +50,7 @@ typedef GeneralTypeEnum Type;
 typedef string register_name;
 typedef string label_name;
 
-typedef pair<int,BranchLabelIndex> branch_pair;
+typedef pair<int, BranchLabelIndex> branch_pair;
 typedef vector<branch_pair> branch_list;
 typedef shared_ptr<branch_list> branch_list_ptr;
 
@@ -79,7 +79,9 @@ typedef vector<STypePtr> ExpList;
 class STypeExpList : public STypeBase {
 public:
     ExpList exp_list;
+
     STypeExpList();
+
     explicit STypeExpList(ExpList &exp_list);
 };
 
@@ -95,7 +97,8 @@ typedef shared_ptr<STypeCType> STypeCTypePtr;
 class STypeString : public STypeBase {
 public:
     string token;
-    explicit STypeString(string& token);
+
+    explicit STypeString(string &token);
 };
 
 typedef shared_ptr<STypeString> STypeStringPtr;
@@ -103,6 +106,7 @@ typedef shared_ptr<STypeString> STypeStringPtr;
 class STypeRegister : public STypeBase {
 public:
     register_name reg_name;
+
     STypeRegister(register_name reg_name, Type type);
 };
 
@@ -112,6 +116,7 @@ class STypeBoolExp : public STypeBase {
 public:
     branch_list true_list;
     branch_list false_list;
+
     STypeBoolExp(branch_list true_list, branch_list false_list);
 };
 
@@ -120,6 +125,7 @@ typedef shared_ptr<STypeBoolExp> STypeBoolExpPtr;
 class STypeStatement : public STypeBase {
 public:
     branch_list next_list;
+
     explicit STypeStatement(branch_list next_list);
 };
 
@@ -128,7 +134,8 @@ typedef shared_ptr<STypeStatement> STypeStatementPtr;
 class STypeNumber : public STypeBase {
 public:
     int token;
-    explicit STypeNumber(string& token_string);
+
+    explicit STypeNumber(string &token_string);
 };
 
 typedef shared_ptr<STypeNumber> STypeNumberPtr;
@@ -138,6 +145,7 @@ class STypeSymbol : public STypeBase {
 public:
     string name;
     int offset;
+
     STypeSymbol(string &name, int offset, Type type);
 };
 
@@ -147,7 +155,9 @@ typedef vector<STypeSymbol> ArgList;
 class STypeArgList : public STypeBase {
 public:
     ArgList arg_list;
+
     STypeArgList();
+
     explicit STypeArgList(ArgList &arg_list);
 };
 
@@ -170,6 +180,7 @@ public:
     case_label_list case_list;
     string default_label;
     branch_list next_list;
+
     STypeCaseList(case_label_list case_list, string default_label, branch_list next_list);
 };
 
@@ -180,15 +191,18 @@ public:
     int case_num;
     string case_label;
     branch_list next_list;
+
     STypeCaseDecl(int case_num, string case_label, branch_list next_list);
 };
 
 typedef shared_ptr<STypeCaseDecl> STypeCaseDeclPtr;
 
 extern string TypeToString(Type type);
+
 extern void ArgListToStrings(ArgList &arg_list, vector<string> &string_vector);
 
 class Scope;
+
 typedef shared_ptr<Scope> ScopePtr;
 
 #endif //HWw3_TYPEDEFS_H

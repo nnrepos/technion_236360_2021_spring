@@ -1,6 +1,5 @@
-
 void main(){
-    byte x = 3;
+    byte x = 4b;
     while (x>3){
         switch(x){
             case 4:
@@ -18,7 +17,7 @@ void main(){
         if (x>6){
             break;
         }
-        x = x+1;
+        x = x+1b;
+        printi(x);
     }
-    // return x;
 }

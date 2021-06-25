@@ -154,8 +154,6 @@ Exp: Exp EQUAL_UNEQUAL Exp
     {$$ = Compiler::instance().ParseRelOp(yylineno, $1, $2, $3);}
 Exp: Exp INEQUALITY Exp
     {$$ = Compiler::instance().ParseRelOp(yylineno, $1, $2, $3);}
-// Exp: LPAREN Type RPAREN Exp
-//     {$$ = Compiler::instance().ParseCast(yylineno, $2, $4);}
 CaseList: CaseDecl GenNextLabel CaseList
     {$$ = Compiler::instance().ParseCaseList(yylineno, $1, $2, $3);}
 CaseList: CaseDecl

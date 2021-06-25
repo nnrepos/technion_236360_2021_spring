@@ -1,0 +1,8 @@
+void main(){
+    switch(3-5){
+        case 3: break;
+        case 5: printi(35);
+    }
+    print("nothing to see here, folks");
+
+}

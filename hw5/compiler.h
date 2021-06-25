@@ -28,17 +28,17 @@ public:
 
     void ParseFuncs(int lineno);
 
-    void ParseFuncDecl(int lineno, const STypePtr& statements, const STypePtr& next_label);
+    void ParseFuncDecl(int lineno, const STypePtr &statements, const STypePtr &next_label);
 
     void ParseFuncHead(int lineno, const STypePtr &ret_type, const STypePtr &id, const STypePtr &formals);
 
-    STypePtr ParseRetType(int lineno, STypePtr type);
+    static STypePtr ParseRetType(int lineno, STypePtr type);
 
-    STypeCTypePtr ParseRetType(int lineno);
+    static STypeCTypePtr ParseRetType(int lineno);
 
-    STypeArgListPtr ParseFormals(int lineno);
+    static STypeArgListPtr ParseFormals(int lineno);
 
-    STypeArgListPtr ParseFormals(int lineno, const STypePtr &formals);
+    static STypeArgListPtr ParseFormals(int lineno, const STypePtr &formals);
 
     static STypeArgListPtr ParseFormalsList(int lineno, const STypePtr &formal);
 
@@ -47,11 +47,12 @@ public:
     STypeSymbolPtr ParseFormalDecl(int lineno, const STypePtr &type, const STypePtr &id);
 
     static STypeStatementPtr
-    ParseStatements(int lineno, STypePtr &statement, const STypePtr& next_list_as_statement);
+    ParseStatements(int lineno, STypePtr &statement, const STypePtr &next_list_as_statement);
 
     STypeStatementPtr
-    ParseStatements(int lineno, const STypePtr& statements, const STypePtr& old_next_list_as_statement, const STypePtr& next_label,
-                    const STypePtr& next_statement, const STypePtr& my_next_list_as_statement);
+    ParseStatements(int lineno, const STypePtr &statements, const STypePtr &old_next_list_as_statement,
+                    const STypePtr &next_label,
+                    const STypePtr &next_statement, const STypePtr &my_next_list_as_statement);
 
     static STypeStatementPtr ParseStatementOfStatements(int lineno, STypePtr &statements);
 
@@ -68,17 +69,20 @@ public:
 
     STypeStatementPtr ParseStatementReturnExp(int lineno, const STypePtr &exp);
 
-    STypeStatementPtr ParseStatementIf(int lineno, const STypePtr& exp, const STypePtr& if_label, const STypePtr& if_statement,
-                                       const STypePtr& if_list_as_statement);
+    STypeStatementPtr
+    ParseStatementIf(int lineno, const STypePtr &exp, const STypePtr &if_label, const STypePtr &if_statement,
+                     const STypePtr &if_list_as_statement);
 
     STypeStatementPtr
-    ParseStatementIfElse(int lineno, const STypePtr& exp, const STypePtr& if_label, const STypePtr& if_statement,
-                         STypePtr if_list_as_statement, const STypePtr& else_label,
-                         const STypePtr& else_statement);
+    ParseStatementIfElse(int lineno, const STypePtr &exp, const STypePtr &if_label, const STypePtr &if_statement,
+                         STypePtr if_list_as_statement, const STypePtr &else_label,
+                         const STypePtr &else_statement);
 
     STypeStatementPtr
-    ParseStatementWhile(int lineno, STypePtr start_list_as_statement, const STypePtr& while_head_label, const STypePtr& exp,
-                        const STypePtr& while_body_label, const STypePtr& while_statement, const STypePtr& end_list_as_statement);
+    ParseStatementWhile(int lineno, STypePtr start_list_as_statement, const STypePtr &while_head_label,
+                        const STypePtr &exp,
+                        const STypePtr &while_body_label, const STypePtr &while_statement,
+                        const STypePtr &end_list_as_statement);
 
     STypeStatementPtr ParseStatementBreak(int lineno);
 
@@ -119,15 +123,14 @@ public:
 
     STypeBoolExpPtr ParseFalse(int lineno);
 
-    STypeBoolExpPtr ParseNot(int lineno, const STypePtr& bool_exp);
+    STypeBoolExpPtr ParseNot(int lineno, const STypePtr &bool_exp);
 
-    STypeBoolExpPtr ParseAnd(int lineno, const STypePtr& bool_exp1, const STypePtr& and_label, const STypePtr &bool_exp2);
+    STypeBoolExpPtr
+    ParseAnd(int lineno, const STypePtr &bool_exp1, const STypePtr &and_label, const STypePtr &bool_exp2);
 
-    STypeBoolExpPtr ParseOr(int lineno, const STypePtr& bool_exp1, const STypePtr& or_label, const STypePtr &bool_exp2);
+    STypeBoolExpPtr ParseOr(int lineno, const STypePtr &bool_exp1, const STypePtr &or_label, const STypePtr &bool_exp2);
 
     STypeBoolExpPtr ParseRelOp(int lineno, const STypePtr &exp1, STypePtr &relop, const STypePtr &exp2);
-
-//    STypePtr ParseCast(int lineno, const STypePtr& type, STypePtr exp);
 
     STypeStringPtr ParseGenIfLabel(int lineno);
 
@@ -147,7 +150,6 @@ public:
 
     STypeStringPtr ParseGenCaseDeclLabel(int lineno);
 
-
     STypeCaseListPtr ParseCaseList(int lineno, STypePtr case_decl, STypePtr next_list, STypePtr case_list);
 
     STypeCaseListPtr ParseCaseList(int lineno, STypePtr case_decl);
@@ -160,9 +162,9 @@ public:
 
     void ParsePushStatementScope(int lineno);
 
-    void ParsePushWhileScope(int lineno, const STypePtr& while_head_label);
+    void ParsePushWhileScope(int lineno, const STypePtr &while_head_label);
 
-    void ParsePushSwitchScope(int lineno, const STypePtr& switch_head_label);
+    void ParsePushSwitchScope(int lineno, const STypePtr &switch_head_label);
 
     void ParsePopScope(int lineno);
 

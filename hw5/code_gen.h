@@ -16,25 +16,13 @@ public:
     SemanticChecks semantic_ref;
     string stack_register;
 
-    CodeGen(SemanticChecks &semantic_ref);
+    explicit CodeGen(SemanticChecks &semantic_ref);
 
     register_name GenRegister();
 
     register_name GenGlobalRegister();
 
     void EmitGlobalFunctions();
-
-
-
-//    STypeStringPtr EmitString(STypePtr stype_string);
-//    STypeCTypePtr EmitInt();
-//    STypeCTypePtr EmitByte();
-//    STypeCTypePtr EmitBool();
-//    STypeNumberPtr EmitNum(STypePtr num);
-//    STypePtr EmitNumB(STypePtr num);
-//    STypePtr EmitParentheses(STypePtr exp);
-//    STypePtr EmitID(STypePtr id);
-//    STypePtr EmitCallExp(STypePtr call_exp);
 
     STypeRegisterPtr EmitBinop(const STypePtr &exp1, string binop, const STypePtr &exp2);
 
@@ -92,8 +80,6 @@ public:
 
     STypeBoolExpPtr EmitRelOp(const STypePtr &exp1, STypePtr &relop, const STypePtr &exp2);
 
-    STypeRegisterPtr EmitCast(STypePtr type, STypePtr exp);
-
     STypeCaseDeclPtr
     EmitCaseDecl(STypePtr num, STypePtr list_as_statement, STypePtr case_decl_label, STypePtr statements);
 
@@ -106,9 +92,6 @@ public:
     void EmitProgram();
 
     string GetNonBoolExpString(const STypePtr &exp);
-
-
-    string SymbolToRegister(int offset, Type type);
 
     static string GetLLVMType(const Type &type);
 

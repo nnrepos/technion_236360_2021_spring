@@ -514,7 +514,7 @@ CodeGen::EmitStatementSwitch(STypePtr exp, STypePtr switch_list_as_statement, ST
         if (i > 0) {
             // backpatch
             last_label = code_buffer.genLabel("_switch_comparison");
-            code_buffer.bpatch(curr_branch_pair,last_label);
+            code_buffer.bpatch(curr_branch_pair, last_label);
         }
 
         // comparison
@@ -526,7 +526,7 @@ CodeGen::EmitStatementSwitch(STypePtr exp, STypePtr switch_list_as_statement, ST
 
         // branch - the last branch is not backpatched
         auto branch_addr = code_buffer.emit("br i1 " + reg_icmp + ", label %" +
-                dynamic_cast_case_list->case_list[i].second + ", label @");
+                                            dynamic_cast_case_list->case_list[i].second + ", label @");
         curr_branch_pair.push_back({branch_addr, SECOND});
 
 
@@ -534,10 +534,10 @@ CodeGen::EmitStatementSwitch(STypePtr exp, STypePtr switch_list_as_statement, ST
 
     // backpatch last branch
     last_label = code_buffer.genLabel("_switch_comparison_end");
-    code_buffer.bpatch(curr_branch_pair,last_label);
+    code_buffer.bpatch(curr_branch_pair, last_label);
 
     // emit default branch if needed
-    if (!dynamic_cast_case_list->default_label.empty()){
+    if (!dynamic_cast_case_list->default_label.empty()) {
         code_buffer.emit("br label %" + dynamic_cast_case_list->default_label);
     }
 
@@ -706,7 +706,6 @@ CodeGen::EmitCaseDecl(STypePtr num, STypePtr list_as_statement, STypePtr case_de
 }
 
 
-
 STypeStatementPtr CodeGen::EmitBranchNext() {
     // using statement because i'm too lazy to create a new class
     auto fake_statement = make_shared<STypeStatement>(
@@ -746,9 +745,9 @@ STypeStatementPtr CodeGen::EmitBranchDefaultHead() {
 
 STypePtr CodeGen::EmitCallExp(STypePtr call_exp) {
     auto dynamic_cast_call_exp = dynamic_pointer_cast<STypeRegister>(call_exp);
-    if (call_exp->general_type == BOOL_TYPE){
+    if (call_exp->general_type == BOOL_TYPE) {
         return RegisterToBoolExp(dynamic_cast_call_exp->reg_name);
-    }else{
+    } else {
         return call_exp;
     }
 
