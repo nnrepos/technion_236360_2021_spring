@@ -57,7 +57,7 @@ void SymbolTable::PushFunctionScope(Type ret_type) {
 }
 
 void SymbolTable::PopScope() {
-    if (PRINT_EXTRA) {
+    if (PRINT_DEBUG) {
         endScope();
     }
 
@@ -69,7 +69,7 @@ void SymbolTable::PopScope() {
             vector<string> string_types;
             ArgListToStrings(dynamic_cast_func->parameters, string_types);
             string ret_type = TypeToString(dynamic_cast_func->ret_type);
-            if (PRINT_EXTRA) {
+            if (PRINT_DEBUG) {
                 printID(dynamic_cast_func->name, 0, makeFunctionType(ret_type, string_types));
             }
             symbols_map.erase(dynamic_cast_func->name);
@@ -79,7 +79,7 @@ void SymbolTable::PopScope() {
         for (const auto &basic_symbol:scope_stack.top()->symbols) {
             assert(basic_symbol->general_type != FUNCTION_TYPE);
             string type = TypeToString(basic_symbol->general_type);
-            if (PRINT_EXTRA) {
+            if (PRINT_DEBUG) {
                 printID(basic_symbol->name, basic_symbol->offset, type);
             }
             symbols_map.erase(basic_symbol->name);
@@ -106,7 +106,8 @@ void SymbolTable::AddParam(const STypeSymbolPtr &symbol) {
 void SymbolTable::AddVariable(const STypeSymbolPtr &symbol) {
     // add params only after adding the function
     assert(!scope_stack.empty());
-    symbol->offset = current_offset++;
+    current_offset+= 4;
+    symbol->offset = current_offset;
     scope_stack.top()->symbols.push_back(symbol);
     symbols_map.emplace(symbol->name, symbol);
 }

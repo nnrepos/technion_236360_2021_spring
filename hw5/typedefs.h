@@ -31,7 +31,7 @@ extern int yylex();
 
 extern char textbuff[1024];
 extern char *textbuffptr;
-extern const bool PRINT_EXTRA;
+extern const bool PRINT_DEBUG;
 
 
 enum GeneralTypeEnum {

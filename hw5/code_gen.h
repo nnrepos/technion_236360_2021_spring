@@ -64,9 +64,9 @@ public:
                         const STypePtr &else_label, const STypePtr &else_statement);
 
     STypeStatementPtr
-    EmitStatementWhile(const STypePtr &while_head_label, const STypePtr &exp, const STypePtr &while_body_label,
-                       const STypePtr &while_statement, const STypePtr &list_as_statement,
-                       const branch_list_ptr &break_list);
+    EmitStatementWhile(STypePtr start_list_as_statement, const STypePtr &while_head_label, const STypePtr &exp,
+                       const STypePtr &while_body_label, const STypePtr &while_statement,
+                       const STypePtr &end_list_as_statement, const branch_list_ptr &break_list);
 
     STypeStatementPtr EmitStatementBreak();
 
@@ -94,11 +94,14 @@ public:
 
     STypeRegisterPtr EmitCast(STypePtr type, STypePtr exp);
 
-    void EmitCaseList();
+    STypeCaseDeclPtr
+    EmitCaseDecl(STypePtr num, STypePtr list_as_statement, STypePtr case_decl_label, STypePtr statements);
 
-    void EmitCaseDefault();
+    STypeCaseListPtr EmitCaseDefault(STypePtr list_as_statement, STypePtr default_label, STypePtr statements);
 
-    void EmitCaseDecl();
+    STypeCaseListPtr EmitCaseList(STypePtr case_decl);
+
+    STypeCaseListPtr EmitCaseList(STypePtr case_decl, STypePtr next_label, STypePtr case_list);
 
     void EmitProgram();
 
@@ -128,6 +131,12 @@ public:
     STypeStatementPtr EmitParseBranchIfNext();
 
     STypeStatementPtr EmitBranchSwitchHead();
+
+    STypeStatementPtr EmitBranchCaseHead();
+
+    STypeStatementPtr EmitBranchDefaultHead();
+
+    STypePtr EmitCallExp(STypePtr call_exp);
 };
 
 

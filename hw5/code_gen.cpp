@@ -61,7 +61,7 @@ STypeRegisterPtr CodeGen::EmitBinop(const STypePtr &exp1, string binop, const ST
             binop_str += "sub ";
             break;
         case '*':
-            binop_str += "smul ";
+            binop_str += "mul ";
             break;
         case '/':
             binop_str += "sdiv ";
@@ -112,7 +112,7 @@ void CodeGen::EmitCheckDivZero(const STypePtr &exp) {
     code_buffer.emit(err_str + " = getelementptr [23 x i8], [23 x i8]* @err_zero, i32 0, i32 0");
     code_buffer.emit("call void (i8*) @print(i8* " + err_str + ")");
     code_buffer.emit("call void (i32) @exit(i32 0)");
-    code_buffer.emit("unreachable");
+    code_buffer.emit("unreachable");  // this prevents no branch before label error
 
     auto label_non_zero = code_buffer.genLabel("_non_zero");
     vector<pair<int, BranchLabelIndex>> bp_non_vec;
@@ -138,19 +138,7 @@ STypeRegisterPtr CodeGen::EmitCall(const STypeFunctionSymbolPtr &func, const STy
         }
         out_str += GetLLVMType(exp_list->exp_list[i]->general_type) + " ";
 
-        if (exp_list->exp_list[i]->general_type == BOOL_TYPE) {
-            auto dynamic_cast_symbol = dynamic_pointer_cast<STypeSymbol>(exp_list->exp_list[i]);
-            auto reg_for_bool = GenRegister();
-
-            if (dynamic_cast_symbol) {
-                out_str += EmitLoadRegister(dynamic_cast_symbol->offset,
-                                            dynamic_cast_symbol->general_type)->reg_name;
-            } else {
-                EmitBoolExpToRegister(exp_list->exp_list[i], reg_for_bool);
-                out_str += reg_for_bool;
-            }
-
-        } else {
+        {
             out_str += GetNonBoolExpString(exp_list->exp_list[i]);
         }
     }
@@ -194,7 +182,7 @@ string CodeGen::GetLLVMType(const Type &type) {
 }
 
 string CodeGen::GetNonBoolExpString(const STypePtr &exp) {
-    // bools that are not function arguments are
+    // supports bools that are in register representation
     auto dynamic_cast_num_exp = dynamic_pointer_cast<STypeNumber>(exp);
     auto dynamic_cast_reg_exp = dynamic_pointer_cast<STypeRegister>(exp);
     auto dynamic_cast_str_exp = dynamic_pointer_cast<STypeString>(exp);
@@ -202,19 +190,10 @@ string CodeGen::GetNonBoolExpString(const STypePtr &exp) {
 
 
     if (dynamic_cast_num_exp) {
-        if (PRINT_EXTRA) {
-            cout << "GOT NUM\n";
-        }
         return to_string(dynamic_cast_num_exp->token);
     } else if (dynamic_cast_reg_exp) {
-        if (PRINT_EXTRA) {
-            cout << "GOT REG\n";
-        }
         return dynamic_cast_reg_exp->reg_name;
     } else if (dynamic_cast_sym_exp) {
-        if (PRINT_EXTRA) {
-            cout << "GOT SYM\n";
-        }
         return EmitLoadRegister(dynamic_cast_sym_exp->offset, dynamic_cast_sym_exp->general_type)->reg_name;
     } else {
         assert(false);
@@ -222,7 +201,7 @@ string CodeGen::GetNonBoolExpString(const STypePtr &exp) {
 }
 
 void CodeGen::EmitProgram() {
-    if (PRINT_EXTRA) {
+    if (PRINT_DEBUG) {
         cout << "code starts here:\n";
     }
     code_buffer.printGlobalBuffer();
@@ -319,7 +298,7 @@ void CodeGen::EmitBoolExpToRegister(const STypePtr &exp, const register_name &re
     code_buffer.emit(reg_result + " = phi i32 [1, %" + true_label + "], [0, %" + false_label + "]");
 }
 
-void CodeGen::EmitFuncHead(const STypeFunctionSymbolPtr& symbol) {
+void CodeGen::EmitFuncHead(const STypeFunctionSymbolPtr &symbol) {
     // emit definition
     string emit_string("define ");
 
@@ -426,7 +405,8 @@ STypeStatementPtr CodeGen::EmitStatementReturnExp(const STypePtr &exp) {
 }
 
 STypeStatementPtr
-CodeGen::EmitStatementIf(const STypePtr& exp, const STypePtr& if_label, const STypePtr& if_statement, const STypePtr& if_list_as_statement) {
+CodeGen::EmitStatementIf(const STypePtr &exp, const STypePtr &if_label, const STypePtr &if_statement,
+                         const STypePtr &if_list_as_statement) {
     auto dynamic_cast_bool_exp = dynamic_pointer_cast<STypeBoolExp>(exp);
     auto dynamic_cast_if_statement = dynamic_pointer_cast<STypeStatement>(if_statement);
     auto dynamic_cast_if_label = dynamic_pointer_cast<STypeString>(if_label);
@@ -438,15 +418,17 @@ CodeGen::EmitStatementIf(const STypePtr& exp, const STypePtr& if_label, const ST
 
     // merge false and next
     auto statement = dynamic_cast_if_statement;
-    statement->next_list =CodeBuffer::merge(dynamic_cast_if_list_as_statement->next_list,
-            CodeBuffer::merge(statement->next_list, dynamic_cast_bool_exp->false_list));
+    statement->next_list = CodeBuffer::merge(dynamic_cast_if_list_as_statement->next_list,
+                                             CodeBuffer::merge(statement->next_list,
+                                                               dynamic_cast_bool_exp->false_list));
 
     return statement;
 }
 
 STypeStatementPtr
-CodeGen::EmitStatementIfElse(const STypePtr& exp, const STypePtr& if_label, const STypePtr& if_statement, STypePtr if_list_as_statement,
-                             const STypePtr& else_label, const STypePtr& else_statement) {
+CodeGen::EmitStatementIfElse(const STypePtr &exp, const STypePtr &if_label, const STypePtr &if_statement,
+                             STypePtr if_list_as_statement,
+                             const STypePtr &else_label, const STypePtr &else_statement) {
     auto dynamic_cast_bool_exp = dynamic_pointer_cast<STypeBoolExp>(exp);
     auto dynamic_cast_if_statement = dynamic_pointer_cast<STypeStatement>(if_statement);
     auto dynamic_cast_else_statement = dynamic_pointer_cast<STypeStatement>(else_statement);
@@ -467,19 +449,23 @@ CodeGen::EmitStatementIfElse(const STypePtr& exp, const STypePtr& if_label, cons
     return statement;
 }
 
-STypeStatementPtr CodeGen::EmitStatementWhile(const STypePtr& while_head_label, const STypePtr& exp, const STypePtr& while_body_label,
-                                              const STypePtr& while_statement, const STypePtr& list_as_statement,
-                                              const branch_list_ptr& break_list) {
+STypeStatementPtr
+CodeGen::EmitStatementWhile(STypePtr start_list_as_statement, const STypePtr &while_head_label, const STypePtr &exp,
+                            const STypePtr &while_body_label, const STypePtr &while_statement,
+                            const STypePtr &end_list_as_statement, const branch_list_ptr &break_list) {
+    auto dynamic_cast_start_list_as_statement = dynamic_pointer_cast<STypeStatement>(start_list_as_statement);
     auto dynamic_cast_bool_exp = dynamic_pointer_cast<STypeBoolExp>(exp);
     auto dynamic_cast_while_statement = dynamic_pointer_cast<STypeStatement>(while_statement);
     auto dynamic_cast_while_head_label = dynamic_pointer_cast<STypeString>(while_head_label);
     auto dynamic_cast_while_body_label = dynamic_pointer_cast<STypeString>(while_body_label);
-    auto dynamic_cast_list_as_statement = dynamic_pointer_cast<STypeStatement>(list_as_statement);
+    auto dynamic_cast_end_list_as_statement = dynamic_pointer_cast<STypeStatement>(end_list_as_statement);
 
-    // bpatch true->body->head
+    // bpatch true->body->head, start->head
     code_buffer.bpatch(dynamic_cast_bool_exp->true_list, dynamic_cast_while_body_label->token);
     code_buffer.bpatch(dynamic_cast_while_statement->next_list, dynamic_cast_while_head_label->token);
-    code_buffer.bpatch(dynamic_cast_list_as_statement->next_list, dynamic_cast_while_head_label->token);
+    code_buffer.bpatch(dynamic_cast_end_list_as_statement->next_list, dynamic_cast_while_head_label->token);
+    code_buffer.bpatch(dynamic_cast_start_list_as_statement->next_list, dynamic_cast_while_head_label->token);
+
 
     // false & break go to next
     auto statement = make_shared<STypeStatement>(CodeBuffer::merge(dynamic_cast_bool_exp->false_list,
@@ -490,20 +476,21 @@ STypeStatementPtr CodeGen::EmitStatementWhile(const STypePtr& while_head_label, 
 
 STypeStatementPtr CodeGen::EmitStatementBreak() {
     // add address to `break_list`
-    semantic_ref.table_ref.scope_stack.top()->break_list->push_back({code_buffer.emit("br label @"), FIRST});
+    semantic_ref.table_ref.scope_stack.top()->break_list->push_back({code_buffer.emit("br label @  ; break"), FIRST});
 
-    auto statement = make_shared<STypeStatement>(CodeBuffer::makelist({code_buffer.emit("br label @"), FIRST}));
+    auto statement = make_shared<STypeStatement>(branch_list());
     return statement;
 }
 
 STypeStatementPtr CodeGen::EmitStatementContinue() {
-    code_buffer.emit("br label " + semantic_ref.table_ref.scope_stack.top()->while_continue_label);
+    code_buffer.emit("br label %" + semantic_ref.table_ref.scope_stack.top()->while_continue_label);
     auto statement = make_shared<STypeStatement>(branch_list());
     return statement;
 }
 
 STypeStatementPtr
-CodeGen::EmitStatementSwitch(STypePtr exp, STypePtr switch_list_as_statement, STypePtr case_list, branch_list_ptr break_list) {
+CodeGen::EmitStatementSwitch(STypePtr exp, STypePtr switch_list_as_statement, STypePtr case_list,
+                             branch_list_ptr break_list) {
     auto dynamic_cast_exp = GetNonBoolExpString(exp);
     auto dynamic_cast_switch_list = dynamic_pointer_cast<STypeStatement>(switch_list_as_statement);
     auto dynamic_cast_case_list = dynamic_pointer_cast<STypeCaseList>(case_list);
@@ -521,29 +508,38 @@ CodeGen::EmitStatementSwitch(STypePtr exp, STypePtr switch_list_as_statement, ST
 
     // emit comparisons
     string last_label;
-    branch_list last_branch_pair;
-    for (int i=0; i < dynamic_cast_case_list->case_list.size(); ++i){
+    branch_list curr_branch_pair;
+    for (size_t i = 0; i < dynamic_cast_case_list->case_list.size(); ++i) {
+
+        if (i > 0) {
+            // backpatch
+            last_label = code_buffer.genLabel("_switch_comparison");
+            code_buffer.bpatch(curr_branch_pair,last_label);
+        }
 
         // comparison
         auto reg_icmp = GenRegister();
         string icmp_string(reg_icmp + " = icmp eq i32 ");
         icmp_string += dynamic_cast_exp + ", ";
         icmp_string += to_string(dynamic_cast_case_list->case_list[i].first);
+        code_buffer.emit(icmp_string);
 
-        // branch
-        auto branch_addr = code_buffer.emit("br i1 " + reg_icmp + ", label @, label @");
-//        last_branch_pair =
+        // branch - the last branch is not backpatched
+        auto branch_addr = code_buffer.emit("br i1 " + reg_icmp + ", label %" +
+                dynamic_cast_case_list->case_list[i].second + ", label @");
+        curr_branch_pair.push_back({branch_addr, SECOND});
 
-        if (i>0){
-            // backpatch
-            last_label = code_buffer.genLabel("_switch_comparison");
-            code_buffer.bpatch()
-        }
+
     }
 
-    // emit final goto
+    // backpatch last branch
+    last_label = code_buffer.genLabel("_switch_comparison_end");
+    code_buffer.bpatch(curr_branch_pair,last_label);
 
-    // backpatch caselist pairs
+    // emit default branch if needed
+    if (!dynamic_cast_case_list->default_label.empty()){
+        code_buffer.emit("br label %" + dynamic_cast_case_list->default_label);
+    }
 
     return statement;
 }
@@ -551,9 +547,9 @@ CodeGen::EmitStatementSwitch(STypePtr exp, STypePtr switch_list_as_statement, ST
 void CodeGen::EmitFuncDecl(const STypePtr &statements, const STypePtr &next_label) {
     // ret things
     auto curr_func_ret_type = semantic_ref.table_ref.scope_stack.top()->ret_type;
-    if (curr_func_ret_type == VOID_TYPE){
+    if (curr_func_ret_type == VOID_TYPE) {
         code_buffer.emit("ret void");
-    }else{
+    } else {
         code_buffer.emit("ret i32 0");
     }
 
@@ -578,7 +574,7 @@ STypeBoolExpPtr CodeGen::EmitFalse() {
     return make_shared<STypeBoolExp>(branch_list(), CodeBuffer::makelist({code_buffer.emit("br label @"), FIRST}));
 }
 
-STypeBoolExpPtr CodeGen::EmitNot(const STypePtr& bool_exp) {
+STypeBoolExpPtr CodeGen::EmitNot(const STypePtr &bool_exp) {
     auto dynamic_cast_bool_exp = dynamic_pointer_cast<STypeBoolExp>(bool_exp);
 
     branch_list old_true_list(dynamic_cast_bool_exp->true_list);
@@ -588,7 +584,7 @@ STypeBoolExpPtr CodeGen::EmitNot(const STypePtr& bool_exp) {
     return dynamic_cast_bool_exp;
 }
 
-STypeBoolExpPtr CodeGen::EmitAnd(const STypePtr& bool_exp1, const STypePtr& and_label, const STypePtr& bool_exp2) {
+STypeBoolExpPtr CodeGen::EmitAnd(const STypePtr &bool_exp1, const STypePtr &and_label, const STypePtr &bool_exp2) {
     auto dynamic_cast_bool_exp1 = dynamic_pointer_cast<STypeBoolExp>(bool_exp1);
     auto dynamic_cast_and_label = dynamic_pointer_cast<STypeString>(and_label);
     auto dynamic_cast_bool_exp2 = dynamic_pointer_cast<STypeBoolExp>(bool_exp2);
@@ -602,7 +598,7 @@ STypeBoolExpPtr CodeGen::EmitAnd(const STypePtr& bool_exp1, const STypePtr& and_
                                                        dynamic_cast_bool_exp2->false_list));
 }
 
-STypeBoolExpPtr CodeGen::EmitOr(const STypePtr& bool_exp1, const STypePtr& or_label, const STypePtr& bool_exp2) {
+STypeBoolExpPtr CodeGen::EmitOr(const STypePtr &bool_exp1, const STypePtr &or_label, const STypePtr &bool_exp2) {
     auto dynamic_cast_bool_exp1 = dynamic_pointer_cast<STypeBoolExp>(bool_exp1);
     auto dynamic_cast_or_label = dynamic_pointer_cast<STypeString>(or_label);
     auto dynamic_cast_bool_exp2 = dynamic_pointer_cast<STypeBoolExp>(bool_exp2);
@@ -614,19 +610,6 @@ STypeBoolExpPtr CodeGen::EmitOr(const STypePtr& bool_exp1, const STypePtr& or_la
     return make_shared<STypeBoolExp>(CodeBuffer::merge(dynamic_cast_bool_exp1->true_list,
                                                        dynamic_cast_bool_exp2->true_list),
                                      dynamic_cast_bool_exp2->false_list);
-}
-
-// TODO
-void CodeGen::EmitCaseList() {
-
-}
-
-void CodeGen::EmitCaseDefault() {
-
-}
-
-void CodeGen::EmitCaseDecl() {
-
 }
 
 STypeRegisterPtr CodeGen::EmitString(const STypePtr &stype_string) {
@@ -646,7 +629,7 @@ STypeRegisterPtr CodeGen::EmitString(const STypePtr &stype_string) {
     return reg_result;
 }
 
-STypePtr CodeGen::EmitID(const STypeSymbolPtr& symbol) {
+STypePtr CodeGen::EmitID(const STypeSymbolPtr &symbol) {
     auto dynamic_cast_symbol = dynamic_pointer_cast<STypeSymbol>(symbol);
 
     auto exp_reg = EmitLoadRegister(dynamic_cast_symbol->offset, dynamic_cast_symbol->general_type);
@@ -658,6 +641,72 @@ STypePtr CodeGen::EmitID(const STypeSymbolPtr& symbol) {
     return exp_reg;
 }
 
+STypeCaseListPtr CodeGen::EmitCaseList(STypePtr case_decl, STypePtr next_label, STypePtr case_list) {
+    auto dynamic_cast_case_decl = dynamic_pointer_cast<STypeCaseDecl>(case_decl);
+    auto dynamic_cast_next_label = dynamic_pointer_cast<STypeString>(next_label);
+    auto dynamic_cast_case_list = dynamic_pointer_cast<STypeCaseList>(case_list);
+
+    // backpatch the statements in the last case declaration
+    code_buffer.bpatch(dynamic_cast_case_decl->next_list, dynamic_cast_next_label->token);
+
+    auto case_label_list = dynamic_cast_case_list->case_list;
+    case_label_list.emplace_back(dynamic_cast_case_decl->case_num, dynamic_cast_case_decl->case_label);
+
+    auto default_label = dynamic_cast_case_list->default_label;
+
+    auto next_list = dynamic_cast_case_list->next_list;
+
+    auto result_case_list = make_shared<STypeCaseList>(case_label_list, default_label, next_list);
+
+    return result_case_list;
+}
+
+STypeCaseListPtr CodeGen::EmitCaseList(STypePtr case_decl) {
+    auto dynamic_cast_case_decl = dynamic_pointer_cast<STypeCaseDecl>(case_decl);
+
+    auto case_list = case_label_list();
+    case_list.emplace_back(dynamic_cast_case_decl->case_num, dynamic_cast_case_decl->case_label);
+
+    auto result_case_list = make_shared<STypeCaseList>(case_list,
+                                                       "",
+                                                       dynamic_cast_case_decl->next_list);
+
+    return result_case_list;
+}
+
+STypeCaseListPtr CodeGen::EmitCaseDefault(STypePtr list_as_statement, STypePtr default_label, STypePtr statements) {
+    auto dynamic_cast_next_list = dynamic_pointer_cast<STypeStatement>(list_as_statement);
+    auto dynamic_cast_case_default_label = dynamic_pointer_cast<STypeString>(default_label);
+    auto dynamic_cast_statements = dynamic_pointer_cast<STypeStatement>(statements);
+
+    auto result_case_list = make_shared<STypeCaseList>(case_label_list(),
+                                                       dynamic_cast_case_default_label->token,
+                                                       dynamic_cast_statements->next_list);
+
+    code_buffer.bpatch(dynamic_cast_next_list->next_list, dynamic_cast_case_default_label->token);
+
+    return result_case_list;
+}
+
+STypeCaseDeclPtr
+CodeGen::EmitCaseDecl(STypePtr num, STypePtr list_as_statement, STypePtr case_decl_label, STypePtr statements) {
+    auto dynamic_cast_num = dynamic_pointer_cast<STypeNumber>(num);
+    auto dynamic_cast_case_decl_label = dynamic_pointer_cast<STypeString>(case_decl_label);
+    auto dynamic_cast_statements = dynamic_pointer_cast<STypeStatement>(statements);
+    auto dynamic_cast_next_list = dynamic_pointer_cast<STypeStatement>(list_as_statement);
+
+    auto case_decl_result = make_shared<STypeCaseDecl>(dynamic_cast_num->token,
+                                                       dynamic_cast_case_decl_label->token,
+                                                       dynamic_cast_statements->next_list);
+
+    code_buffer.bpatch(dynamic_cast_next_list->next_list, dynamic_cast_case_decl_label->token);
+
+    return case_decl_result;
+
+}
+
+
+
 STypeStatementPtr CodeGen::EmitBranchNext() {
     // using statement because i'm too lazy to create a new class
     auto fake_statement = make_shared<STypeStatement>(
@@ -667,7 +716,7 @@ STypeStatementPtr CodeGen::EmitBranchNext() {
 
 STypeStatementPtr CodeGen::EmitBranchWhileHead() {
     auto fake_statement = make_shared<STypeStatement>(
-            CodeBuffer::makelist({code_buffer.emit("br label @  ; end of while"), FIRST}));
+            CodeBuffer::makelist({code_buffer.emit("br label @  ; start/end of while"), FIRST}));
     return fake_statement;
 }
 
@@ -682,3 +731,26 @@ STypeStatementPtr CodeGen::EmitBranchSwitchHead() {
             CodeBuffer::makelist({code_buffer.emit("br label @  ; start of switch"), FIRST}));
     return fake_statement;
 }
+
+STypeStatementPtr CodeGen::EmitBranchCaseHead() {
+    auto fake_statement = make_shared<STypeStatement>(
+            CodeBuffer::makelist({code_buffer.emit("br label @  ; start of case"), FIRST}));
+    return fake_statement;
+}
+
+STypeStatementPtr CodeGen::EmitBranchDefaultHead() {
+    auto fake_statement = make_shared<STypeStatement>(
+            CodeBuffer::makelist({code_buffer.emit("br label @  ; start of default"), FIRST}));
+    return fake_statement;
+}
+
+STypePtr CodeGen::EmitCallExp(STypePtr call_exp) {
+    auto dynamic_cast_call_exp = dynamic_pointer_cast<STypeRegister>(call_exp);
+    if (call_exp->general_type == BOOL_TYPE){
+        return RegisterToBoolExp(dynamic_cast_call_exp->reg_name);
+    }else{
+        return call_exp;
+    }
+
+}
+

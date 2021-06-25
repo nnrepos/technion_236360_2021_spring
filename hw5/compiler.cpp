@@ -55,7 +55,7 @@ void Compiler::ParseFuncHead(int lineno, const STypePtr &ret_type, const STypePt
 
 }
 
-void Compiler::ParseFuncDecl(int lineno, const STypePtr& statements, const STypePtr& next_label) {
+void Compiler::ParseFuncDecl(int lineno, const STypePtr &statements, const STypePtr &next_label) {
     code_gen.EmitFuncDecl(statements, next_label);
 }
 
@@ -111,31 +111,40 @@ STypeSymbolPtr Compiler::ParseFormalDecl(int lineno, const STypePtr &type, const
 }
 
 STypeStatementPtr
-Compiler::ParseStatements(int lineno, STypePtr &statement, STypePtr next_list_as_statement, STypePtr next_label) {
+Compiler::ParseStatements(int lineno, STypePtr &statement, const STypePtr& next_list_as_statement) {
     auto dynamic_cast_statement = dynamic_pointer_cast<STypeStatement>(statement);
     auto dynamic_cast_next_list = dynamic_pointer_cast<STypeStatement>(next_list_as_statement);
 
     dynamic_cast_statement->next_list = CodeBuffer::merge(dynamic_cast_statement->next_list,
-                                                                   dynamic_cast_next_list->next_list);
+                                                          dynamic_cast_next_list->next_list);
+
     return dynamic_cast_statement;
 }
 
 STypeStatementPtr
-Compiler::ParseStatements(int lineno, STypePtr statements, STypePtr next_list_as_statement, STypePtr next_label,
-                          STypePtr next_statement) {
+Compiler::ParseStatements(int lineno, const STypePtr &statements, const STypePtr& old_next_list_as_statement,
+                          const STypePtr& next_label,
+                          const STypePtr &next_statement, const STypePtr& my_next_list_as_statement) {
     auto dynamic_cast_statements = dynamic_pointer_cast<STypeStatement>(statements);
-    auto dynamic_cast_next_list = dynamic_pointer_cast<STypeStatement>(next_list_as_statement);
+    auto dynamic_cast_old_next_list = dynamic_pointer_cast<STypeStatement>(old_next_list_as_statement);
     auto dynamic_cast_next_label = dynamic_pointer_cast<STypeString>(next_label);
     auto dynamic_cast_next_statement = dynamic_pointer_cast<STypeStatement>(next_statement);
+    auto dynamic_cast_my_next_list = dynamic_pointer_cast<STypeStatement>(my_next_list_as_statement);
 
+    // bpatch last statement
     code_gen.code_buffer.bpatch(dynamic_cast_statements->next_list, dynamic_cast_next_label->token);
-    code_gen.code_buffer.bpatch(dynamic_cast_next_list->next_list, dynamic_cast_next_label->token);
+    code_gen.code_buffer.bpatch(dynamic_cast_old_next_list->next_list, dynamic_cast_next_label->token);
+
+    // get last statement
+    dynamic_cast_next_statement->next_list = CodeBuffer::merge(dynamic_cast_next_statement->next_list,
+                                                               dynamic_cast_my_next_list->next_list);
 
     return dynamic_cast_next_statement;
 }
 
 
-STypeStatementPtr Compiler::ParseStatementOfStatements(int lineno, STypePtr &statements) {
+STypeStatementPtr
+Compiler::ParseStatementOfStatements(int lineno, STypePtr &statements) {
     auto dynamic_cast_statements = dynamic_pointer_cast<STypeStatement>(statements);
     return dynamic_cast_statements;
 }
@@ -213,7 +222,7 @@ STypeStatementPtr Compiler::ParseStatementAssign(int lineno, const STypePtr &id,
 }
 
 STypeStatementPtr Compiler::ParseStatementCall(int lineno) {
-    return code_gen.EmitStatementCall();
+    return CodeGen::EmitStatementCall();
 }
 
 STypeStatementPtr Compiler::ParseStatementReturn(int lineno) {
@@ -240,27 +249,31 @@ STypeStatementPtr Compiler::ParseStatementReturnExp(int lineno, const STypePtr &
     return code_gen.EmitStatementReturnExp(exp);
 }
 
-STypeStatementPtr Compiler::ParseStatementIf(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement,
-                                             STypePtr if_list_as_statement) {
+// TODO make stuff const
+STypeStatementPtr Compiler::ParseStatementIf(int lineno, const STypePtr& exp, const STypePtr& if_label, const STypePtr& if_statement,
+                                             const STypePtr &if_list_as_statement) {
     return code_gen.EmitStatementIf(exp, if_label, if_statement, if_list_as_statement);
 }
 
 STypeStatementPtr
-Compiler::ParseStatementIfElse(int lineno, STypePtr exp, STypePtr if_label, STypePtr if_statement,
-                               STypePtr if_list_as_statement, STypePtr else_label,
-                               STypePtr else_statement) {
-    return code_gen.EmitStatementIfElse(exp, if_label, if_statement, if_list_as_statement, else_label, else_statement);
+Compiler::ParseStatementIfElse(int lineno, const STypePtr& exp, const STypePtr& if_label, const STypePtr& if_statement,
+                               STypePtr if_list_as_statement, const STypePtr& else_label,
+                               const STypePtr& else_statement) {
+    return code_gen.EmitStatementIfElse(exp, if_label, if_statement, move(if_list_as_statement), else_label, else_statement);
 }
 
 STypeStatementPtr
-Compiler::ParseStatementWhile(int lineno, STypePtr while_head_label, STypePtr exp, STypePtr while_body_label,
-                              STypePtr while_statement, STypePtr list_as_statement) {
+Compiler::ParseStatementWhile(int lineno, STypePtr start_list_as_statement, const STypePtr& while_head_label, const STypePtr& exp,
+                              const STypePtr& while_body_label, const STypePtr& while_statement, const STypePtr& end_list_as_statement) {
     // pop scope
     assert(symbol_table.scope_stack.top()->scope_type == WHILE_SCOPE);
     auto break_list = symbol_table.scope_stack.top()->break_list;
+    symbol_table.PopScope();
 
     // emit
-    return code_gen.EmitStatementWhile(while_head_label, exp, while_body_label, while_statement, list_as_statement,
+    return code_gen.EmitStatementWhile(move(start_list_as_statement), while_head_label, exp, while_body_label,
+                                       while_statement,
+                                       end_list_as_statement,
                                        break_list);
 }
 
@@ -271,9 +284,8 @@ Compiler::ParseStatementSwitch(int lineno, STypePtr exp, STypePtr switch_list_as
     auto break_list = symbol_table.scope_stack.top()->break_list;
     symbol_table.PopScope();
 
-    // emit TODO
-    return code_gen.EmitStatementSwitch(exp, switch_list_as_statement,
-                                        case_list, break_list);
+    return code_gen.EmitStatementSwitch(move(exp), move(switch_list_as_statement),
+                                        move(case_list), break_list);
 }
 
 STypeStatementPtr Compiler::ParseStatementBreak(int lineno) {
@@ -312,14 +324,7 @@ STypePtr Compiler::ParseCall(int lineno, const STypePtr &id, const STypePtr &exp
     auto dynamic_cast_func = dynamic_pointer_cast<STypeFunctionSymbol>(symbol_from_id);
     auto dynamic_cast_exp_list = dynamic_pointer_cast<STypeExpList>(exp_list);
 
-    auto reversed_exp_list = make_shared<STypeExpList>();
-    for (auto exp_iter = dynamic_cast_exp_list->exp_list.rbegin();
-         exp_iter != dynamic_cast_exp_list->exp_list.rend(); exp_iter++) {
-
-        reversed_exp_list->exp_list.push_back(*exp_iter);
-    }
-
-    if (!semantic_checks.IsLegalCallTypes(dynamic_cast_func, reversed_exp_list)) {
+    if (!semantic_checks.IsLegalCallTypes(dynamic_cast_func, dynamic_cast_exp_list)) {
         vector<string> expected_args;
         for (const auto &symbol:dynamic_cast_func->parameters) {
             expected_args.push_back(TypeToString(symbol.general_type));
@@ -363,14 +368,15 @@ STypePtr Compiler::ParseCall(int lineno, const STypePtr &id) {
 
 STypePtr Compiler::ParseExplist(int lineno, const STypePtr &exp) {
     auto exp_list_pointer = make_shared<STypeExpList>();
-    exp_list_pointer->exp_list.push_back(exp);
+
+    exp_list_pointer->exp_list.insert(exp_list_pointer->exp_list.begin(), exp);
     return exp_list_pointer;
 }
 
 STypePtr Compiler::ParseExplist(int lineno, const STypePtr &exp, const STypePtr &exp_list) {
     auto dynamic_cast_exp_list = dynamic_pointer_cast<STypeExpList>(exp_list);
 
-    dynamic_cast_exp_list->exp_list.push_back(exp);
+    dynamic_cast_exp_list->exp_list.insert(dynamic_cast_exp_list->exp_list.begin(), exp);
     return dynamic_cast_exp_list;
 }
 
@@ -426,7 +432,7 @@ STypePtr Compiler::ParseID(int lineno, const STypePtr &id) {
 }
 
 STypePtr Compiler::ParseCallExp(int lineno, STypePtr call_exp) {
-    return call_exp;
+    return code_gen.EmitCallExp(move(call_exp));
 }
 
 STypeNumberPtr Compiler::ParseNum(int lineno, const STypePtr &num) {
@@ -459,7 +465,7 @@ STypeBoolExpPtr Compiler::ParseFalse(int lineno) {
     return code_gen.EmitFalse();
 }
 
-STypeBoolExpPtr Compiler::ParseNot(int lineno, STypePtr bool_exp) {
+STypeBoolExpPtr Compiler::ParseNot(int lineno, const STypePtr& bool_exp) {
     // exp can be a bool literal or an id
     if (semantic_checks.IsFunctionType(bool_exp->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp);
@@ -472,10 +478,10 @@ STypeBoolExpPtr Compiler::ParseNot(int lineno, STypePtr bool_exp) {
         exit(0);
     }
 
-    return code_gen.EmitNot(bool_exp);
+    return CodeGen::EmitNot(bool_exp);
 }
 
-STypeBoolExpPtr Compiler::ParseAnd(int lineno, STypePtr bool_exp1, STypePtr and_label, const STypePtr &bool_exp2) {
+STypeBoolExpPtr Compiler::ParseAnd(int lineno, const STypePtr& bool_exp1, const STypePtr& and_label, const STypePtr &bool_exp2) {
     if (semantic_checks.IsFunctionType(bool_exp1->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp1);
         errorUndef(lineno, cast_function->name);
@@ -498,10 +504,10 @@ STypeBoolExpPtr Compiler::ParseAnd(int lineno, STypePtr bool_exp1, STypePtr and_
         exit(0);
     }
 
-    return code_gen.EmitAnd(bool_exp1, move(and_label), bool_exp2);
+    return code_gen.EmitAnd(bool_exp1, and_label, bool_exp2);
 }
 
-STypeBoolExpPtr Compiler::ParseOr(int lineno, STypePtr bool_exp1, STypePtr or_label, const STypePtr &bool_exp2) {
+STypeBoolExpPtr Compiler::ParseOr(int lineno, const STypePtr& bool_exp1, const STypePtr& or_label, const STypePtr &bool_exp2) {
     if (semantic_checks.IsFunctionType(bool_exp1->general_type)) {
         auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(bool_exp1);
         errorUndef(lineno, cast_function->name);
@@ -548,60 +554,45 @@ STypeBoolExpPtr Compiler::ParseRelOp(int lineno, const STypePtr &exp1, STypePtr 
     return code_gen.EmitRelOp(exp1, relop, exp2);
 }
 
-//STypePtr Compiler::ParseCast(int lineno, const STypePtr& type, STypePtr exp) {
-//    auto dynamic_cast_type = dynamic_pointer_cast<STypeCType>(type);
-//
-//    if (semantic_checks.IsFunctionType(exp->general_type)) {
-//        auto cast_function = dynamic_pointer_cast<STypeFunctionSymbol>(exp);
-//        errorUndef(lineno, cast_function->name);
-//        exit(0);
-//    }
-//
-//
-//    if (!semantic_checks.IsLegalCast(dynamic_cast_type->general_type, exp->general_type)) {
-//        errorMismatch(lineno);
-//        exit(0);
-//    }
-//
-//    exp->general_type = dynamic_cast_type->general_type;
-//    return exp;
-//}
-
-STypeCaseListPtr Compiler::ParseCaseList(int lineno, STypePtr case_decl, STypePtr next_label, STypePtr case_list) {
-    return EmitCaseList(case_decl, next_label, case_list);
+STypeCaseListPtr Compiler::ParseCaseList(int lineno, STypePtr case_decl, STypePtr next_list, STypePtr case_list) {
+    return code_gen.EmitCaseList(move(case_decl), move(next_list), move(case_list));
 }
 
 STypeCaseListPtr Compiler::ParseCaseList(int lineno, STypePtr case_decl) {
-    return EmitCaseList(case_decl);
+    return code_gen.EmitCaseList(move(case_decl));
 }
 
-STypeCaseListPtr Compiler::ParseCaseDefault(int lineno, STypePtr default_label, STypePtr statements) {
-    return EmitCaseDefault(default_label, statements);
+STypeCaseListPtr
+Compiler::ParseCaseDefault(int lineno, STypePtr list_as_statement, STypePtr default_label, STypePtr statements) {
+    return code_gen.EmitCaseDefault(move(list_as_statement), move(default_label), move(statements));
 }
 
-STypeCaseDeclPtr Compiler::ParseCaseDecl(int lineno, STypePtr num, STypePtr case_decl_label, STypePtr statements) {
-    return EmitCaseDecl(num, case_decl_label, statements);
+STypeCaseDeclPtr Compiler::ParseCaseDecl(int lineno, STypePtr num, STypePtr list_as_statement, STypePtr case_decl_label,
+                                         STypePtr statements) {
+    return code_gen.EmitCaseDecl(move(num), move(list_as_statement), move(case_decl_label), move(statements));
 }
 
 void Compiler::ParsePushStatementScope(int lineno) {
     symbol_table.PushScope(STATEMENT_SCOPE);
 }
 
-void Compiler::ParsePushWhileScope(int lineno, STypePtr while_head_label) {
+void Compiler::ParsePushWhileScope(int lineno, const STypePtr& while_head_label) {
     auto dynamic_cast_while_head_label = dynamic_pointer_cast<STypeString>(while_head_label);
     auto break_list = make_shared<branch_list>();
 
     symbol_table.PushScope(WHILE_SCOPE);
     symbol_table.scope_stack.top()->while_continue_label = dynamic_cast_while_head_label->token;
     symbol_table.scope_stack.top()->break_list = break_list;
+    symbol_table.scope_stack.top()->inside_while = true;
 }
 
-void Compiler::ParsePushSwitchScope(int lineno, STypePtr switch_head_label) {
+void Compiler::ParsePushSwitchScope(int lineno, const STypePtr& switch_head_label) {
     auto dynamic_cast_switch_head_label = dynamic_pointer_cast<STypeString>(switch_head_label);
     auto break_list = make_shared<branch_list>();
 
     symbol_table.PushScope(SWITCH_SCOPE);
     symbol_table.scope_stack.top()->break_list = break_list;
+    symbol_table.scope_stack.top()->inside_switch = true;
 }
 
 void Compiler::ParsePopScope(int lineno) {
@@ -697,62 +688,31 @@ STypeStatementPtr Compiler::ParseBranchSwitchHead(int lineno) {
     return code_gen.EmitBranchSwitchHead();
 }
 
-STypeCaseListPtr Compiler::EmitCaseList(STypePtr case_decl, STypePtr next_label, STypePtr case_list) {
-    auto dynamic_cast_case_decl = dynamic_pointer_cast<STypeCaseDecl>(case_decl);
-    auto dynamic_cast_next_label = dynamic_pointer_cast<STypeString>(next_label);
-    auto dynamic_cast_case_list = dynamic_pointer_cast<STypeCaseList>(case_list);
 
-    // backpatch the statements in the last case declaration
-    code_gen.code_buffer.bpatch(dynamic_cast_case_decl->next_list, dynamic_cast_next_label->token);
-
-    auto case_label_list = dynamic_cast_case_list->case_list;
-    case_label_list.emplace_back(dynamic_cast_case_decl->case_num, dynamic_cast_case_decl->case_label);
-
-    auto default_label = dynamic_cast_case_list->default_label;
-
-    auto next_list = dynamic_cast_case_list->next_list;
-
-    auto result_case_list = make_shared<STypeCaseList>(case_label_list,default_label, next_list);
-
-
+STypeStatementPtr Compiler::ParseBranchCaseHead(int lineno) {
+    return code_gen.EmitBranchCaseHead();
 }
 
-STypeCaseListPtr Compiler::EmitCaseList(STypePtr case_decl) {
-    auto dynamic_cast_case_decl = dynamic_pointer_cast<STypeCaseDecl>(case_decl);
-
-    auto case_list = case_label_list();
-    case_list.emplace_back(dynamic_cast_case_decl->case_num, dynamic_cast_case_decl->case_label);
-
-    auto result_case_list = make_shared<STypeCaseList>(case_list,
-                                                       "",
-                                                       dynamic_cast_case_decl->next_list);
-
-    return result_case_list;
+STypeStatementPtr Compiler::ParseBranchDefaultHead(int lineno) {
+    return code_gen.EmitBranchDefaultHead();
 }
 
-STypeCaseListPtr Compiler::EmitCaseDefault(STypePtr default_label, STypePtr statements) {
-    auto dynamic_cast_case_default_label = dynamic_pointer_cast<STypeString>(default_label);
-    auto dynamic_cast_statements = dynamic_pointer_cast<STypeStatement>(statements);
+STypePtr Compiler::ParseConvertBool(int lineno, STypePtr exp) {
+    if (exp->general_type == BOOL_TYPE) {
+        auto dynamic_cast_symbol = dynamic_pointer_cast<STypeSymbol>(exp);
+        auto reg_for_bool = code_gen.GenRegister();
+        auto result_reg_ptr = make_shared<STypeRegister>(reg_for_bool, BOOL_TYPE);
 
-    auto result_case_list = make_shared<STypeCaseList>(case_label_list(),
-                                                       dynamic_cast_case_default_label->token,
-                                                       dynamic_cast_statements->next_list);
+        if (dynamic_cast_symbol) {
+            result_reg_ptr = code_gen.EmitLoadRegister(dynamic_cast_symbol->offset,
+                                                       dynamic_cast_symbol->general_type);
+        } else {
+            code_gen.EmitBoolExpToRegister(exp, reg_for_bool);
+        }
 
-    return result_case_list;
+        return result_reg_ptr;
+
+    } else{
+        return exp;
+    }
 }
-
-STypeCaseDeclPtr Compiler::EmitCaseDecl(STypePtr num, STypePtr case_decl_label, STypePtr statements) {
-    auto dynamic_cast_num = dynamic_pointer_cast<STypeNumber>(num);
-    auto dynamic_cast_case_decl_label = dynamic_pointer_cast<STypeString>(case_decl_label);
-    auto dynamic_cast_statements = dynamic_pointer_cast<STypeStatement>(statements);
-
-    auto case_decl_result = make_shared<STypeCaseDecl>(dynamic_cast_num->token,
-                                                       dynamic_cast_case_decl_label->token,
-                                                       dynamic_cast_statements->next_list);
-
-    return case_decl_result;
-
-}
-
-
-

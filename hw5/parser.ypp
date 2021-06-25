@@ -82,8 +82,8 @@ FormalDecl: Type ID
     {$$ = Compiler::instance().ParseFormalDecl(yylineno, $1, $2);}
 Statements: Statement BranchNext
     {$$ = Compiler::instance().ParseStatements(yylineno, $1, $2);}
-Statements: Statements BranchNext GenNextLabel Statement
-    {$$ = Compiler::instance().ParseStatements(yylineno, $1, $2, $3, $4);}
+Statements: Statements BranchNext GenNextLabel Statement BranchNext
+    {$$ = Compiler::instance().ParseStatements(yylineno, $1, $2, $3, $4, $5);}
 Statement: PushStatementScope LBRACE Statements RBRACE PopScope
     {$$ = Compiler::instance().ParseStatementOfStatements(yylineno, $3);}
 Statement: Type ID SC
@@ -102,8 +102,8 @@ Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope GenIfLabel Statemen
     {$$ = Compiler::instance().ParseStatementIf(yylineno, $3, $7, $8, $10);}
 Statement: IF LPAREN Exp CheckBool RPAREN PushStatementScope GenIfLabel Statement PopScope BranchIfNext ELSE PushStatementScope GenElseLabel Statement PopScope
     {$$ = Compiler::instance().ParseStatementIfElse(yylineno, $3, $7, $8, $10, $13, $14);}
-Statement: WHILE LPAREN GenWhileHeadLabel Exp CheckBool RPAREN PushWhileScope GenWhileBodyLabel Statement BranchWhileHead
-    {$$ = Compiler::instance().ParseStatementWhile(yylineno, $3, $4, $8, $9, $10);}
+Statement: WHILE LPAREN BranchWhileHead GenWhileHeadLabel Exp CheckBool RPAREN PushWhileScope GenWhileBodyLabel Statement BranchWhileHead
+    {$$ = Compiler::instance().ParseStatementWhile(yylineno, $3, $4, $5, $9, $10, $11);}
 Statement: BREAK SC
     {$$ = Compiler::instance().ParseStatementBreak(yylineno);}
 Statement: CONTINUE SC
@@ -114,10 +114,10 @@ Call: ID LPAREN ExpList RPAREN
     {$$ = Compiler::instance().ParseCall(yylineno, $1, $3);}
 Call: ID LPAREN RPAREN
     {$$ = Compiler::instance().ParseCall(yylineno, $1);}
-ExpList: Exp
-    {$$ = Compiler::instance().ParseExplist(yylineno, $1);}
-ExpList: Exp COMMA ExpList
-    {$$ = Compiler::instance().ParseExplist(yylineno, $1, $3);}
+ExpList: Exp ConvertBool
+    {$$ = Compiler::instance().ParseExplist(yylineno, $2);}
+ExpList: Exp ConvertBool COMMA ExpList
+    {$$ = Compiler::instance().ParseExplist(yylineno, $2, $4);}
 Type: INT
     {$$ = Compiler::instance().ParseInt(yylineno);}
 Type: BYTE
@@ -157,13 +157,13 @@ Exp: Exp INEQUALITY Exp
 // Exp: LPAREN Type RPAREN Exp
 //     {$$ = Compiler::instance().ParseCast(yylineno, $2, $4);}
 CaseList: CaseDecl GenNextLabel CaseList
-    {Compiler::instance().ParseCaseList(yylineno, $1, $2, $3);}
-CaseList: CaseDecl // TODO: bpatch in switch
-    {Compiler::instance().ParseCaseList(yylineno, $1);}
-CaseList: DEFAULT COLON GenDefaultLabel Statements
-    {Compiler::instance().ParseCaseDefault(yylineno, $3, $4);}
-CaseDecl: CASE NUM COLON GenCaseDeclLabel Statements
-    {Compiler::instance().ParseCaseDecl(yylineno, $2, $4, $5);}
+    {$$ = Compiler::instance().ParseCaseList(yylineno, $1, $2, $3);}
+CaseList: CaseDecl
+    {$$ = Compiler::instance().ParseCaseList(yylineno, $1);}
+CaseList: DEFAULT COLON BranchDefaultHead GenDefaultLabel Statements
+    {$$ = Compiler::instance().ParseCaseDefault(yylineno, $3, $4, $5);}
+CaseDecl: CASE NUM COLON BranchCaseHead GenCaseDeclLabel Statements
+    {$$ = Compiler::instance().ParseCaseDecl(yylineno, $2, $4, $5, $6);}
 
 // ~~~ markers ~~~
 // scope
@@ -211,6 +211,14 @@ BranchIfNext: %empty
     {$$ = Compiler::instance().ParseBranchIfNext(yylineno);}
 BranchSwitchHead: %empty
     {$$ = Compiler::instance().ParseBranchSwitchHead(yylineno);}
+BranchCaseHead: %empty
+    {$$ = Compiler::instance().ParseBranchCaseHead(yylineno);}
+BranchDefaultHead:%empty
+    {$$ = Compiler::instance().ParseBranchDefaultHead(yylineno);}
+
+// etc.
+ConvertBool: %empty
+    {$$ = Compiler::instance().ParseConvertBool(yylineno, $0);}
 %%
 
 void yyerror(const char * message)

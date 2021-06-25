@@ -3,7 +3,7 @@
 
 char textbuff[1024];
 char* textbuffptr;
-const bool PRINT_EXTRA = true;
+const bool PRINT_DEBUG = false;
 
 int main(){
 
