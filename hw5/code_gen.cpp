@@ -532,14 +532,18 @@ CodeGen::EmitStatementSwitch(STypePtr exp, STypePtr switch_list_as_statement, ST
 
     }
 
-    // backpatch last branch
-    last_label = code_buffer.genLabel("_switch_comparison_end");
-    code_buffer.bpatch(curr_branch_pair, last_label);
 
     // emit default branch if needed
     if (!dynamic_cast_case_list->default_label.empty()) {
         code_buffer.emit("br label %" + dynamic_cast_case_list->default_label);
+        code_buffer.bpatch(curr_branch_pair, dynamic_cast_case_list->default_label);
+    }else{
+        // backpatch last branch if no default
+        last_label = code_buffer.genLabel("_switch_comparison_end");
+        code_buffer.bpatch(curr_branch_pair, last_label);
     }
+
+
 
     return statement;
 }
@@ -631,6 +635,11 @@ STypeRegisterPtr CodeGen::EmitString(const STypePtr &stype_string) {
 
 STypePtr CodeGen::EmitID(const STypeSymbolPtr &symbol) {
     auto dynamic_cast_symbol = dynamic_pointer_cast<STypeSymbol>(symbol);
+
+    if (dynamic_cast_symbol->general_type == FUNCTION_TYPE){
+        // do not convert function id to register
+        return dynamic_cast_symbol;
+    }
 
     auto exp_reg = EmitLoadRegister(dynamic_cast_symbol->offset, dynamic_cast_symbol->general_type);
     if (exp_reg->general_type == BOOL_TYPE) {
