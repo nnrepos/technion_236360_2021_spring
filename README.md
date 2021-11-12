@@ -4,6 +4,5 @@
 * this time, i have 0 memory leaks, and no bugs (hw4 is a dry exercise): <br>
 ![image](https://user-images.githubusercontent.com/45516943/126870652-bc815f5d-7ea4-4c17-9928-cca29cccf1cc.png)
 * i fixed the bug on hw1 after submitting it (i only supported uppercase hexa chars)
-* there was an announcement on the GR++ website that a full solution to the test will be uploaded soon. if not, i'll upload my own
 * to use flex/bison on windows, install cygwin/wsl and the flex & bison packages. see: https://cmake.org/cmake/help/latest/module/FindFLEX.html
 * in every semester, a different feature is added to the compiler. this semester, it was a switch-case statement
